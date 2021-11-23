@@ -1,6 +1,6 @@
 {
   "name": "@pngfi/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Typescript SDK for Penguin Finance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,6 +14,9 @@
     "prepublishOnly": "tsc -p src",
     "test": "jest"
   },
+  "files": [
+    "/dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pngfi/typescript-sdk.git"
