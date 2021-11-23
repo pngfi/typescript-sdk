@@ -1,0 +1,57 @@
+{
+  "name": "@pngfi/sdk",
+  "version": "0.1.0",
+  "description": "Typescript SDK for Penguin Finance.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": "Penguin Finance",
+  "scripts": {
+    "build": "tsc -p src",
+    "watch": "tsc -w -p src",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prepare": "husky install",
+    "prepublishOnly": "tsc -p src",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pngfi/typescript-sdk.git"
+  },
+  "keywords": [
+    "penguin",
+    "png",
+    "pngfi",
+    "crypto",
+    "solana",
+    "amm",
+    "dex",
+    "sdk"
+  ],
+  "bugs": {
+    "url": "https://github.com/pngfi/typescript-sdk/issues"
+  },
+  "homepage": "https://png.fi",
+  "dependencies": {
+    "@saberhq/solana-contrib": "^1.7.4",
+    "@solana/buffer-layout": "^3.0.0",
+    "@solana/spl-token": "^0.1.8",
+    "@solana/spl-token-swap": "^0.1.2",
+    "@solana/web3.js": "^1.30.2",
+    "decimal.js": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^4.11.6",
+    "@types/decimal.js": "^7.4.0",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "husky": "^7.0.1",
+    "jest": "^27.0.6",
+    "lint-staged": ">=10",
+    "prettier": "^2.3.2",
+    "ts-jest": "^27.0.3",
+    "typescript": "^4.5.2"
+  }
+}
