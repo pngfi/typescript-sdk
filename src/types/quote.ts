@@ -6,6 +6,8 @@ import { Token, FeeStructure } from '.';
 export type QuotePoolParams = {
   inputToken: Token;
   outputToken: Token;
+  inputTokenCount: u64;
+  outputTokenCount: u64;
   feeStructure: FeeStructure;
   slippage: number;
   lamportsPerSignature: number;

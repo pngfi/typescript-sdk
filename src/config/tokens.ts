@@ -5358,24 +5358,6 @@ export const tokens: Token[] = [
   },
   {
     "chainId": 101,
-    "mint": "FeGn77dhg1KXRRFeSwwMiykZnZPw5JXW6naf2aQgZDQf",
-    "symbol": "wWETH",
-    "name": "Wrapped Ether (Wormhole)",
-    "decimals": 9,
-    "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/FeGn77dhg1KXRRFeSwwMiykZnZPw5JXW6naf2aQgZDQf/logo.png",
-    "tags": [
-      "wrapped",
-      "wormhole"
-    ],
-    "extensions": {
-      "mint": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-      "assetContract": "https://etherscan.io/mint/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-      "bridgeContract": "https://etherscan.io/mint/0xf92cD566Ea4864356C5491c177A430C222d7e678",
-      "coingeckoId": "weth"
-    }
-  },
-  {
-    "chainId": 101,
     "mint": "FeLoyXk8ac2AYVmDhAWEKNWWT63Z9TczeidYbpDvxF3T",
     "symbol": "wCAPS",
     "name": "Wrapped Capsule Coin (Wormhole)",
@@ -20373,7 +20355,8 @@ export const tokens: Token[] = [
       "assetContract": "https://etherscan.io/mint/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "bridgeContract": "https://etherscan.io/mint/0x3ee18B2214AFF97000D974cf647E7C347E8fa585",
       "coingeckoId": "weth"
-    }
+    },
+    fetchPrice: true
   },
   {
     "chainId": 101,
@@ -28265,9 +28248,26 @@ export const tokens: Token[] = [
   },
   {
     "chainId": 101,
+    "mint": "BdZPG9xWrG3uFrx2KrUW1jT4tZ9VKPDWknYihzoPRJS3",
+    "symbol": "prtSOL",
+    "name": "Parrot Stake Pool Token",
+    "decimals": 9,
+    "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/9EaLkQrbjmbbuZG9Wdpo8qfNUEjHATJFSycEmw6f1rGX/logo.svg",
+    "extensions": {
+      "discord": "https://discord.gg/gopartyparrot",
+      "medium": "https://gopartyparrot.medium.com/",
+      "telegram": "https://t.me/gopartyparrot",
+      "twitter": "https://twitter.com/gopartyparrot",
+      "website": "https://parrot.fi",
+      "coingeckoId": "solana"
+    },
+    fetchPrice: true
+  },
+  {
+    "chainId": 101,
     "mint": "5ATNFRnFS8niLsdnmXz5KPSFa5HWYqPvPCP6qL34fXwj",
     "symbol": "SOL_USDC",
-    "name": "PNG SOL_USDC LP",
+    "name": "Penguin SOL_USDC LP",
     "decimals": 6,
     "display": false
   },
@@ -28275,7 +28275,31 @@ export const tokens: Token[] = [
     "chainId": 101,
     "mint": "JX6tB7DTPM3jjyGfjASWUJ6r3P77uSHhjVFeaPhJEgD",
     "symbol": "PRT_USDC",
-    "name": "PNG PRT_USDC LP",
+    "name": "Penguin PRT_USDC LP",
+    "decimals": 6,
+    "display": false
+  },
+  {
+    "chainId": 101,
+    "mint": "AdaRxhhtHmLz8qgkEvVV6sb9BoGmQ2x2VxLQAedf1uDk",
+    "symbol": "weWETH_PAI",
+    "name": "Penguin weWETH_PAI LP",
+    "decimals": 6,
+    "display": false
+  },
+  {
+    "chainId": 101,
+    "mint": "BPY5oGvks5bR6zQyyWopQmijj7eZYUM1r7YJPmTJ5FKx",
+    "symbol": "PRT_PAI",
+    "name": "Penguin PRT_PAI LP",
+    "decimals": 6,
+    "display": false
+  },
+  {
+    "chainId": 101,
+    "mint": "2hQ5mPB1LiuPTBWQt8LCwp3CybFuaM2LNDsAgwTqkx4c",
+    "symbol": "prtSOL_USDC",
+    "name": "Penguin prtSOL_USDC LP",
     "decimals": 6,
     "display": false
   }

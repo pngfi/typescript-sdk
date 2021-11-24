@@ -22,11 +22,6 @@ export type Transaction = {
   from: string;
 }
 
-export type BalancesRecord = Record<string, Decimal>;
-export type TransactionsRecord = Record<string, Transaction>;
-export type MessagesRecord = Record<string, Message>;
-export type PricesRecord = Record<string, number>;
-
 export type FeeStructure = {
   tradeFeeNumerator: number;
   tradeFeeDenominator: number;

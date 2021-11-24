@@ -2,7 +2,7 @@ import { PublicKey } from '@solana/web3.js';
 import { FeeStructure } from '../types';
 
 export const PNG_TOKEN_SWAP_ID: PublicKey = new PublicKey(
-  '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+  'PSwapMdSai8tjrEXcxFeQth87xC4rRsa4VA5mhGhXkP'
 );
 
 export const PNG_TOKEN_SWAP_FEE_ACCOUNT_OWNER = new PublicKey('3M1gJoNCxuw6GBMRatHzCvxwbQMiUZ6VoG22UCjubQZq');

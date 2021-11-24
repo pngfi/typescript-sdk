@@ -1,6 +1,6 @@
 {
   "name": "@pngfi/sdk",
-  "version": "0.1.1",
+  "version": "0.2.2",
   "description": "Typescript SDK for Penguin Finance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,6 +36,7 @@
   },
   "homepage": "https://png.fi",
   "dependencies": {
+    "@orca-so/stablecurve": "^1.0.6",
     "@saberhq/solana-contrib": "^1.7.4",
     "@solana/buffer-layout": "^3.0.0",
     "@solana/spl-token": "^0.1.8",

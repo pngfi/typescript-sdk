@@ -20,7 +20,7 @@ export type PoolInfo = {
   curveType: CurveType;
   feeStructure: FeeStructure;
   tokenA: PoolToken;
-  tokenB: PoolToken;
+  tokenB: PoolToken ;
   lpSupply: Decimal;
   amp?: number;
 };
