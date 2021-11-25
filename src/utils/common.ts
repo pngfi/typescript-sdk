@@ -18,13 +18,13 @@ export function isNumber(value: any) {
 export function beautify(str = ''): string {
   const reg = str.indexOf('.') > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
   str = str.replace(reg, '$1,');
-  return str.replace(/(\.0*[1-9]+)(0)*/, '$1');
+  return str.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
 }
 
 export function toFixed(value = 0, fixed = 2, force = false): string {
   const str = /\./.test(value.toString()) ? value.toFixed(fixed) :
     value.toFixed(force ? fixed : 0);
-  return str.replace(/(\.0*[1-9]+)(0)*/, '$1');
+  return str.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
 }
 
 export function getTokenByMint(mint: string): Token | undefined {
