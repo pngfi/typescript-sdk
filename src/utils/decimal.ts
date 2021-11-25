@@ -39,7 +39,7 @@ export class DecimalUtil {
         input.gt(ONE_DECIMAL) && input.lt(ONE_HUNDRED_DECIMAL) ? 3 : 2;
     }
 
-    const str = input.toNumber().toFixed(fixed);
+    const str = input.toFixed(fixed, 1);
     return beautify(str);
   }
 }

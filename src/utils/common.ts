@@ -2,7 +2,7 @@ import { PublicKey } from '@solana/web3.js';
 
 import { tokens } from '../config';
 import { PoolInfo, Token } from '../types';
-
+import Decimal from 'decimal.js';
 import { u64 } from '@solana/spl-token';
 
 export const ZERO_U64 = new u64(0);
@@ -22,8 +22,9 @@ export function beautify(str = ''): string {
 }
 
 export function toFixed(value = 0, fixed = 2, force = false): string {
-  const str = /\./.test(value.toString()) ? value.toFixed(fixed) :
-    value.toFixed(force ? fixed : 0);
+  const str = /\./.test(value.toString()) ? new Decimal(value).toFixed(fixed, 1) :
+    new Decimal(value).toFixed(force ? fixed : 0, 1);
+    
   return str.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
 }
 
