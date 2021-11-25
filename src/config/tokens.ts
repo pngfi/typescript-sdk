@@ -3076,7 +3076,7 @@ export const tokens: Token[] = [
   {
     "chainId": 101,
     "mint": "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E",
-    "symbol": "BTC",
+    "symbol": "BTC(Sollet)",
     "name": "Wrapped Bitcoin (Sollet)",
     "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E/logo.png",
@@ -15967,7 +15967,8 @@ export const tokens: Token[] = [
       "telegram": "https://t.me/gopartyparrot",
       "twitter": "https://twitter.com/gopartyparrot",
       "website": "https://parrot.fi"
-    }
+    },
+    fetchPrice: true
   },
   {
     "chainId": 101,
@@ -20342,7 +20343,7 @@ export const tokens: Token[] = [
   {
     "chainId": 101,
     "mint": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
-    "symbol": "weWETH",
+    "symbol": "weETH",
     "name": "Wrapped Ether (Wormhole)",
     "decimals": 8,
     "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
@@ -28263,27 +28264,27 @@ export const tokens: Token[] = [
     },
     fetchPrice: true
   },
-  {
-    "chainId": 101,
-    "mint": "5ATNFRnFS8niLsdnmXz5KPSFa5HWYqPvPCP6qL34fXwj",
-    "symbol": "SOL_USDC",
-    "name": "Penguin SOL_USDC LP",
-    "decimals": 6,
-    "display": false
-  },
-  {
-    "chainId": 101,
-    "mint": "JX6tB7DTPM3jjyGfjASWUJ6r3P77uSHhjVFeaPhJEgD",
-    "symbol": "PRT_USDC",
-    "name": "Penguin PRT_USDC LP",
-    "decimals": 6,
-    "display": false
-  },
+  // {
+  //   "chainId": 101,
+  //   "mint": "5ATNFRnFS8niLsdnmXz5KPSFa5HWYqPvPCP6qL34fXwj",
+  //   "symbol": "SOL_USDC",
+  //   "name": "Penguin SOL_USDC LP",
+  //   "decimals": 6,
+  //   "display": false
+  // },
+  // {
+  //   "chainId": 101,
+  //   "mint": "JX6tB7DTPM3jjyGfjASWUJ6r3P77uSHhjVFeaPhJEgD",
+  //   "symbol": "PRT_USDC",
+  //   "name": "Penguin PRT_USDC LP",
+  //   "decimals": 6,
+  //   "display": false
+  // },
   {
     "chainId": 101,
     "mint": "AdaRxhhtHmLz8qgkEvVV6sb9BoGmQ2x2VxLQAedf1uDk",
-    "symbol": "weWETH_PAI",
-    "name": "Penguin weWETH_PAI LP",
+    "symbol": "weETH_PAI",
+    "name": "Penguin weETH_PAI LP",
     "decimals": 6,
     "display": false
   },
@@ -28297,9 +28298,25 @@ export const tokens: Token[] = [
   },
   {
     "chainId": 101,
-    "mint": "2hQ5mPB1LiuPTBWQt8LCwp3CybFuaM2LNDsAgwTqkx4c",
-    "symbol": "prtSOL_USDC",
-    "name": "Penguin prtSOL_USDC LP",
+    "mint": "EcJUr3qHpETUWpN8RaznGbkQJngHFgdXegFi9daSgoqX",
+    "symbol": "prtSOL_PAI",
+    "name": "Penguin prtSOL_PAI LP",
+    "decimals": 6,
+    "display": false
+  },
+  {
+    "chainId": 101,
+    "mint": "8q4mLHnpovVf6ZBFdQyArBzQ7FxY85chHhUNywbQrBQS",
+    "symbol": "BTC(Sollet)_PAI",
+    "name": "Penguin BTC(Sollet)_PAI LP",
+    "decimals": 6,
+    "display": false
+  },
+  {
+    "chainId": 101,
+    "mint": "Fq7XL97MWnbneVk4Tzr61BkL8LtEqRCZWruwhyswtnDw",
+    "symbol": "SOL_PAI",
+    "name": "Penguin SOL_PAI LP",
     "decimals": 6,
     "display": false
   }
