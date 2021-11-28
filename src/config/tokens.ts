@@ -3076,7 +3076,7 @@ export const tokens: Token[] = [
   {
     "chainId": 101,
     "mint": "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E",
-    "symbol": "BTC(Sollet)",
+    "symbol": "BTC",
     "name": "Wrapped Bitcoin (Sollet)",
     "decimals": 6,
     "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E/logo.png",
@@ -20343,7 +20343,7 @@ export const tokens: Token[] = [
   {
     "chainId": 101,
     "mint": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
-    "symbol": "weETH",
+    "symbol": "weWETH",
     "name": "Wrapped Ether (Wormhole)",
     "decimals": 8,
     "logoURI": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
@@ -28283,8 +28283,8 @@ export const tokens: Token[] = [
   {
     "chainId": 101,
     "mint": "AdaRxhhtHmLz8qgkEvVV6sb9BoGmQ2x2VxLQAedf1uDk",
-    "symbol": "weETH_PAI",
-    "name": "Penguin weETH_PAI LP",
+    "symbol": "weWETH_PAI",
+    "name": "Penguin weWETH_PAI LP",
     "decimals": 6,
     "display": false
   },
@@ -28307,8 +28307,8 @@ export const tokens: Token[] = [
   {
     "chainId": 101,
     "mint": "8q4mLHnpovVf6ZBFdQyArBzQ7FxY85chHhUNywbQrBQS",
-    "symbol": "BTC(Sollet)_PAI",
-    "name": "Penguin BTC(Sollet)_PAI LP",
+    "symbol": "BTC_PAI",
+    "name": "Penguin BTC_PAI LP",
     "decimals": 6,
     "display": false
   },

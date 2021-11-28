@@ -12,11 +12,11 @@ export const pools: PoolConfig[] = [
   //   addr: new PublicKey('24ZbKS36rkPv14Tdx8qv4NRyqatTaJ5KgJrT1LxBKn5d')
   // },
   {
-    pair: 'weETH_PAI',
+    pair: 'weWETH_PAI',
     addr: new PublicKey('VG7NmfRs1tbhM6CZQYWq7kkLdXn4A9JEiWzi9XrR39Y')
   },
   {
-    pair: 'BTC(Sollet)_PAI',
+    pair: 'BTC_PAI',
     addr: new PublicKey('9SWfJbEH97fkSU31E74vDAPT3r7XvQynzTDns6Ve9iyk')
   },
   {
