@@ -1,5 +1,3 @@
-import Decimal from 'decimal.js';
-
 export type GlobalInfo = {
   walletName: string;
   slippage: number;

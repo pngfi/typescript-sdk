@@ -2,7 +2,7 @@ import { PublicKey } from '@solana/web3.js';
 
 import { PoolConfig } from '../types';
 
-export const pools: PoolConfig[] = [
+export const mainnetPools: PoolConfig[] = [
   // {
   //   pair: 'SOL_USDC',
   //   addr: new PublicKey('5niCukG5maB72UcaGaHAg5GiFrfNY6mEddrdA8FcDFNp')
@@ -30,5 +30,12 @@ export const pools: PoolConfig[] = [
   {
     pair: 'SOL_PAI',
     addr: new PublicKey('GfgZJgNycWxsc5K8xB6F75KDHKsR71gQXCtkhx7PPfQ5')
+  }
+];
+
+export const devnetPools: PoolConfig[] = [
+  {
+    pair: 'SOL_USDC',
+    addr: new PublicKey('6VznpsWwaJjDiWF7A6xZosKHb8AbtG29wrJbK5ysHRfg')
   }
 ];
