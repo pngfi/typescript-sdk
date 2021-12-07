@@ -1,0 +1,328 @@
+{
+  "version": "0.0.0",
+  "name": "bonding",
+  "instructions": [
+    {
+      "name": "initBonding",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "assetMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetHolder",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u8"
+        },
+        {
+          "name": "controlVariable",
+          "type": "u64"
+        },
+        {
+          "name": "decayFactor",
+          "type": "u64"
+        },
+        {
+          "name": "tokenMintDecimals",
+          "type": "u8"
+        },
+        {
+          "name": "bondingSupply",
+          "type": "u64"
+        },
+        {
+          "name": "liquidityPool",
+          "type": {
+            "option": {
+              "defined": "LpInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "purchaseWithStable",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userAssetHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userVTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "maxPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "purchaseWithLiquidity",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "assetHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userAssetHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userVTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenAHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenBHolder",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "maxPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateBondingSupply",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newBondingSupply",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Bonding",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vTokenHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "assetMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "assetHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuth",
+            "type": "publicKey"
+          },
+          {
+            "name": "nonce",
+            "type": "u8"
+          },
+          {
+            "name": "tokenMintDecimals",
+            "type": "u8"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "totalDebt",
+            "type": "u64"
+          },
+          {
+            "name": "controlVariable",
+            "type": "u64"
+          },
+          {
+            "name": "decayFactor",
+            "type": "u64"
+          },
+          {
+            "name": "lastDecay",
+            "type": "i64"
+          },
+          {
+            "name": "lpInfo",
+            "type": {
+              "option": {
+                "defined": "LpInfo"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "LpInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tokenAHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenBHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenADecimals",
+            "type": "u8"
+          },
+          {
+            "name": "tokenBDecimals",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "address": "3PuDqvYBpYaHS2dPBrV1YgFJQD9xzz9o8PP4by2VE22S"
+  }
+}
