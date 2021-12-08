@@ -1,16 +1,21 @@
 import type { Provider } from '@saberhq/solana-contrib';
 
-import { BondingConfig, BondingInfo } from '../../types';
+import { 
+  BondingConfig, 
+  BondingInfo,
+  VestConfigInfo
+} from '../../types';
 
 import {
   PNG_BONDING_ID,
   PNG_VESTING_ID,
-  deserializeAccount,
   DecimalUtil,
   ZERO_DECIMAL,
   deriveAssociatedTokenAddress,
   resolveOrCreateAssociatedTokenAddress,
-  ZERO_U64
+  ZERO_U64,
+  getTokenAccountInfo,
+  getTokenMintInfo
 } from '../../utils';
 
 import {
@@ -25,7 +30,7 @@ import {
   TOKEN_PROGRAM_ID,
   Token as SPLToken,
   AccountInfo as TokenAccountInfo,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
 
 import idl from './idl.json';
@@ -40,8 +45,6 @@ const VESTING_SEED_PREFIX = 'vesting';
 const VESTING_SIGNER_SEED_PREFIX = 'vesting_signer';
 const VESTING_CONFIG_SIGNER_SEED_PREFIX = 'vest_config_signer';
 
-const PNG_TOKEN_MINT = new PublicKey('PNGXZxRnRwixr7jrMSctAErSTF5SRnPQcuakkWRHe4h');
-
 export class Bonding {
   public config: BondingConfig;
   private program: Program;
@@ -53,9 +56,27 @@ export class Bonding {
     this.vestingProgram = new Program(vestingIdl as Idl, PNG_VESTING_ID, provider as any);
   }
 
-  private async getTokenAccountInfo(tokenAccount: PublicKey): Promise<Omit<TokenAccountInfo, "address"> | null> {
-    const assetHolderInfo = await this.program.provider.connection.getAccountInfo(tokenAccount);
-    return assetHolderInfo ? deserializeAccount(assetHolderInfo.data) : null;
+  async getVestConfigInfo(): Promise<VestConfigInfo | null> {
+    try {
+   
+      const {
+        vestMint,
+        claimAllDuration,
+        halfLifeDuration,
+        claimableHolder,
+        claimableMint
+      } = await this.vestingProgram.account.vestConfig.fetch(this.config.vestConfig);
+
+      return {
+        vestMint,
+        claimAllDuration: claimAllDuration.toNumber(),
+        halfLifeDuration: halfLifeDuration.toNumber(),
+        claimableHolder,
+        claimableMint
+      }
+    } catch (err) {
+      return null;
+    }
   }
 
   async getUserVesting(user: PublicKey) {
@@ -76,64 +97,100 @@ export class Bonding {
   async getBondingInfo(): Promise<BondingInfo> {
     const {
       assetMint,
+      tokenMintDecimals,
       assetHolder,
       vTokenHolder,
-      lpInfo
+      lpInfo,
+      lastDecay,
+      decayFactor,
+      controlVariable,
+      totalDebt,
+      bondingSupply
     } = await this.program.account.bonding.fetch(this.config.addr);
 
-    const assetHolderInfo = await this.getTokenAccountInfo(assetHolder);
+    const [assetHolderInfo, vTokenHolderInfo] = await Promise.all([
+      getTokenAccountInfo(this.program.provider as any, assetHolder),
+      getTokenAccountInfo(this.program.provider as any, vTokenHolder)
+    ]);
 
     return {
       address: this.config.addr,
       assetMint,
+      assetMintDecimals: tokenMintDecimals,
       assetHolder,
       vTokenHolder,
+      vTokenMint: vTokenHolderInfo?.mint || PublicKey.default,
       lpInfo,
-      assetHolderAmount: assetHolderInfo ? DecimalUtil.fromU64(assetHolderInfo.amount) : ZERO_DECIMAL
+      assetHolderAmount: assetHolderInfo ? DecimalUtil.fromU64(assetHolderInfo.amount) : ZERO_DECIMAL,
+      lastDecay: lastDecay.toNumber(),
+      decayFactor: decayFactor.toNumber(),
+      controlVariable: controlVariable.toNumber(),
+      totalDebt,
+      bondingSupply
     }
   }
 
-  async calcPayout(bondingInfo: BondingInfo, amount: u64) {
-    let valudation = 0;
-    if (bondingInfo?.lpInfo) {
+  private decay(bondingInfo: BondingInfo): u64 {
+    const { lastDecay, totalDebt, decayFactor } = bondingInfo;
 
-      const assetToken = new SPLToken(
-        this.program.provider.connection, 
-        new PublicKey(bondingInfo.assetMint), 
-        TOKEN_PROGRAM_ID,
-        {} as any
-      );
+    const duration = Math.floor(new Date().getTime() / 1000 - lastDecay);
+    const decay = totalDebt.mul(new u64(duration)).div(new u64(decayFactor));
+   
+    return decay.gt(totalDebt) ? totalDebt : decay;
+  }
 
-      const [tokenAAccountInfo, tokenBAccountInfo, assetTokenMintInfo] = await Promise.all([
-        this.getTokenAccountInfo(bondingInfo.lpInfo.tokenAHolder),
-        this.getTokenAccountInfo(bondingInfo.lpInfo.tokenBHolder),
-        assetToken.getMintInfo()
-      ]);
+  private async valuation(bondingInfo: BondingInfo, amount: u64): Promise<u64> {
+    const { vTokenMint, assetMint, lpInfo } = bondingInfo;
 
-      const decimals = 6;
-      const tokenAAmount = tokenAAccountInfo?.amount || ZERO_U64;
-      const tokenBAmount = tokenBAccountInfo?.amount || ZERO_U64;
+    const [vTokenMintInfo, assetMintInfo, tokenAHolderInfo, tokenBHolderInfo] = await Promise.all([
+      getTokenMintInfo(this.program.provider as any, vTokenMint),
+      getTokenMintInfo(this.program.provider as any, assetMint),
+      lpInfo ? getTokenAccountInfo(this.program.provider as any, lpInfo.tokenAHolder) : Promise.resolve(null),
+      lpInfo ? getTokenAccountInfo(this.program.provider as any, lpInfo.tokenBHolder) : Promise.resolve(null),
+    ]);
 
-      const kValue =
-        tokenAAmount
-          .mul(tokenBAmount)
-          .div(new u64(Math.pow(10, decimals)))
-          .toNumber()
-
-      const totalValue = Math.sqrt(kValue) * 2;
-
-      valudation = amount
-        .mul(new u64(Math.floor(totalValue)))
-        .div(assetTokenMintInfo.supply)
-        .toNumber();
+    if (!lpInfo) {
+      return amount.mul(new u64(Math.pow(10, vTokenMintInfo.decimals)))
+        .div(new u64(Math.pow(10, assetMintInfo.decimals)));
     } else {
-      valudation =
-        amount
-          .mul(new u64(Math.pow(10, 6)))
-          .div(new u64(Math.pow(10, 6)))
-          .toNumber()
+      const { tokenADecimals, tokenBDecimals } = lpInfo;
 
+      const decimals = tokenADecimals + tokenBDecimals - assetMintInfo.decimals;
+      const tokenAAmount = tokenAHolderInfo?.amount || ZERO_U64;
+      const tokenBAmount = tokenBHolderInfo?.amount || ZERO_U64;
+
+      const kValue = tokenAAmount.mul(tokenBAmount).div(new u64(Math.pow(10, decimals)));
+    
+      const totalValue = DecimalUtil.fromU64(kValue).sqrt().mul(2);
+
+      return DecimalUtil.toU64(totalValue, assetMintInfo.decimals)
+        .mul(amount)
+        .div(new u64(Math.pow(10, assetMintInfo.decimals)))
+        .div(assetMintInfo.supply);
     }
+
+  }
+
+  async calcPayout(amount: u64): Promise<u64> {
+    const bondingInfo = await this.getBondingInfo();
+    const { totalDebt, bondingSupply, controlVariable } = bondingInfo;
+
+    const debtRatio =
+      totalDebt
+        .sub(this.decay(bondingInfo))
+        .mul(new u64(1e9))
+        .div(bondingSupply);
+
+    const price =
+      debtRatio
+        .mul(new u64(controlVariable))
+        .add(new u64(1e9))
+        .div(new u64(1e7))
+        .toNumber();
+
+    const valuation = await this.valuation(bondingInfo, amount);
+
+    return valuation.mul(new u64(100)).div(new u64(price));
   }
 
   async purchaseLPToken(amount: u64) {
@@ -148,15 +205,12 @@ export class Bonding {
 
     // Resolve or create asset user account;
     const userAssetHolder = await deriveAssociatedTokenAddress(owner, bondingInfo.assetMint);
-    const vTokenHolderInfo = await this.getTokenAccountInfo(bondingInfo.vTokenHolder);
-
-    const vTokenMint = vTokenHolderInfo?.mint || PublicKey.default;
 
     const { address: userVTokenHolder, ...resolveUserVTokenAccountInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.program.provider.connection,
         owner,
-        vTokenMint,
+        bondingInfo.vTokenMint,
         amount
       );
 
@@ -180,6 +234,24 @@ export class Bonding {
       }
     );
 
+    return new TransactionEnvelope(
+      this.program.provider as any,
+      [
+        ...resolveUserVTokenAccountInstrucitons.instructions,
+        purchaseInstruction
+      ],
+      [
+        ...resolveUserVTokenAccountInstrucitons.signers
+      ]
+    );
+
+  }
+
+  async vestVToken(amount: u64) {
+
+    const bondingInfo = await this.getBondingInfo();
+
+    const owner = this.program.provider.wallet?.publicKey;
     const vestingInstructions = [];
 
     const [vestingAddr] = await PublicKey.findProgramAddress(
@@ -188,21 +260,21 @@ export class Bonding {
     );
 
     const vestingAccountInfo = await this.program.provider.connection.getAccountInfo(vestingAddr);
-    
+
     const [vSigner, nonce] = await PublicKey.findProgramAddress(
       [Buffer.from(VESTING_SIGNER_SEED_PREFIX), vestingAddr.toBuffer()],
       this.vestingProgram.programId
     );
 
-    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, vTokenMint);
-    
+    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, bondingInfo.vTokenMint);
+    const userVTokenHolder = await deriveAssociatedTokenAddress(owner, bondingInfo.vTokenMint);
+
     if (!vestingAccountInfo) {
-    
       vestingInstructions.push(this.vestingProgram.instruction.initVesting(nonce, {
         accounts: {
           vestConfig: this.config.vestConfig,
           vesting: vestingAddr,
-          vestMint: vTokenMint,
+          vestMint: bondingInfo.vTokenMint,
           vestedHolder,
           vestingSigner: vSigner,
           payer: owner,
@@ -213,57 +285,46 @@ export class Bonding {
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         }
       }));
-
     }
 
-    const updateInstruction = this.vestingProgram.instruction.update({
+    vestingInstructions.push(this.vestingProgram.instruction.update({
       accounts: {
         vestConfig: this.config.vestConfig,
         vesting: vestingAddr,
         vestedHolder,
-        vestMint: vTokenMint,
+        vestMint: bondingInfo.vTokenMint,
         vestingSigner: vSigner,
         owner,
         clock: SYSVAR_CLOCK_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
       }
-    });
+    }));
 
-    const vestInstruction = this.vestingProgram.instruction.vest(new u64(1_000_000), {
-      accounts: {
-        vesting: vestingAddr,
-        vestedHolder,
-        userVestHolder: userVTokenHolder,
-        owner,
-        clock: SYSVAR_CLOCK_PUBKEY,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      instructions: [updateInstruction]
-    });
+    vestingInstructions.push(this.vestingProgram.instruction.vest(
+      amount,
+      {
+        accounts: {
+          vesting: vestingAddr,
+          vestedHolder,
+          userVestHolder: userVTokenHolder,
+          owner,
+          clock: SYSVAR_CLOCK_PUBKEY,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        }
+      }
+    ));
 
     return new TransactionEnvelope(
-        this.program.provider as any,
-        [
-          ...resolveUserVTokenAccountInstrucitons.instructions,
-          purchaseInstruction,
-          ...vestingInstructions
-        ],
-        [
-          ...resolveUserVTokenAccountInstrucitons.signers
-        ]
-      ).combine(
-        new TransactionEnvelope(
-          this.program.provider as any,
-          [
-            updateInstruction,
-            vestInstruction
-          ]
-        )
-      );
+      this.program.provider as any,
+      [
+        ...vestingInstructions
+      ],
+      []
+    );
 
   }
 
-  async claimVestedToken() {
+  async claimVestedToken(tokenMint: PublicKey) {
     const bondingInfo = await this.getBondingInfo();
 
     const owner = this.program.provider.wallet?.publicKey;
@@ -282,37 +343,34 @@ export class Bonding {
       [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
       this.vestingProgram.programId
     );
-    
-    const vTokenHolderInfo = await this.getTokenAccountInfo(bondingInfo.vTokenHolder);
-    const vTokenMint = vTokenHolderInfo?.mint || PublicKey.default;
 
-    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, vTokenMint);
+    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, bondingInfo.vTokenMint);
 
     const claimableHolder = await deriveAssociatedTokenAddress(
       vcSigner,
-      PNG_TOKEN_MINT
+      tokenMint
     );
 
     const { address: userTokenHolder, ...resolveUserTokenAccountInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.program.provider.connection,
         owner,
-        PNG_TOKEN_MINT
+        tokenMint
       );
-    
+
     const updateInstruction = this.vestingProgram.instruction.update({
       accounts: {
         vestConfig: this.config.vestConfig,
         vesting: vestingAddr,
         vestedHolder,
-        vestMint: vTokenMint,
+        vestMint: bondingInfo.vTokenMint,
         vestingSigner: vSigner,
         owner,
         clock: SYSVAR_CLOCK_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
       }
     });
-    
+
     const claimInstruction = this.vestingProgram.instruction.claim({
       accounts: {
         vestConfig: this.config.vestConfig,
@@ -338,6 +396,43 @@ export class Bonding {
         ...resolveUserTokenAccountInstrucitons.signers
       ]
     )
+  }
+
+  static estimatedVestingClaimable(
+    halfLifeDuration: number,
+    claimAllDuration: number,
+    vestedHolderAmount: u64,
+    lastUpdatedTime: number,
+    lastVestTime: number,
+    claimableAmount: u64,
+    updateTime: number //in seconds
+  ): u64 {
+  
+    if (updateTime <= lastUpdatedTime) {
+      throw Error('update time should gt lastUpdateTime');
+    }
+  
+    //no more vested amount
+    if (vestedHolderAmount.lte(ZERO_U64)) {
+      return claimableAmount;
+    }
+  
+    // claimed all
+    if (updateTime - lastVestTime > claimAllDuration) {
+      return claimableAmount.add(vestedHolderAmount);
+    }
+  
+    const timeElapsed = updateTime - lastUpdatedTime;
+  
+    const newRemainedAmount = 
+      DecimalUtil.fromU64(vestedHolderAmount)
+        .mul(
+          DecimalUtil.fromNumber(Math.exp((-Math.LN2 * timeElapsed) / halfLifeDuration))
+        );
+  
+    const newClaimableAmount = DecimalUtil.fromU64(vestedHolderAmount).sub(newRemainedAmount);
+  
+    return claimableAmount.add(DecimalUtil.toU64(newClaimableAmount));
   }
 
 }

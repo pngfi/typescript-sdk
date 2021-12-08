@@ -26,7 +26,7 @@ export class DecimalUtil {
       throw new Error(`Negative decimal value ${input} cannot be converted to u64.`);
     }
 
-    const shiftedValue = new u64(input.mul(new Decimal(10).pow(new Decimal(shift))).toFixed());
+    const shiftedValue = new u64(input.mul(new Decimal(10).pow(new Decimal(shift))).toDecimalPlaces(0).toString());
     return shiftedValue;
   }
 
