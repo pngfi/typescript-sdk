@@ -1,0 +1,321 @@
+{
+  "version": "0.0.0",
+  "name": "staking",
+  "instructions": [
+    {
+      "name": "initStaking",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u8"
+        },
+        {
+          "name": "rebaseEpochDuration",
+          "type": "u64"
+        },
+        {
+          "name": "rebaseRateNumerator",
+          "type": "u128"
+        },
+        {
+          "name": "rebaseRateDenominator",
+          "type": "u128"
+        },
+        {
+          "name": "rebaseSupply",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStakeTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "unstake",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStakeTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "stakeTokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateRebaseSupply",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newRebaseSupply",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "transferAdminAuth",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newAdminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "rebase",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Staking",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "stakeTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardsHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "nonce",
+            "type": "u8"
+          },
+          {
+            "name": "isInitialized",
+            "type": "bool"
+          },
+          {
+            "name": "adminAuth",
+            "type": "publicKey"
+          },
+          {
+            "name": "rebaseLastTime",
+            "type": "i64"
+          },
+          {
+            "name": "rebaseEpochDuration",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseRateNumerator",
+            "type": "u128"
+          },
+          {
+            "name": "rebaseRateDenominator",
+            "type": "u128"
+          },
+          {
+            "name": "rebaseSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

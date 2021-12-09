@@ -4,7 +4,13 @@ import { FeeStructure } from '../types';
 export const PNG_TOKEN_SWAP_ID: PublicKey = new PublicKey('PSwapMdSai8tjrEXcxFeQth87xC4rRsa4VA5mhGhXkP');
 
 export const PNG_BONDING_ID: PublicKey = new PublicKey('PBoEjmpmsRCAoMdUhG8RVdC9S72drGdaUXK9e3Y1WzL');
+
+// vesting program and config id
 export const PNG_VESTING_ID: PublicKey = new PublicKey('PVESVqP7ahDvzZak8jWadExisWr5UAMughzw2Q243th');
+
+// staking program and config id
+export const PNG_STAKING_ID: PublicKey = new PublicKey('PSTKQuioNjJHQbBBBffCcL5aujgNbSJdAD8LsaYJU37');
+export const STAKING_CONFIG: PublicKey = new PublicKey('AHnMYme14FKXQbBnMbR92T3vYLUjd8oAxfX2VScRd2KV');
 
 export const PNG_TOKEN_SWAP_FEE_ACCOUNT_OWNER = new PublicKey('3M1gJoNCxuw6GBMRatHzCvxwbQMiUZ6VoG22UCjubQZq');
 

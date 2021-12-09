@@ -28,8 +28,6 @@ import {
 import {
   u64,
   TOKEN_PROGRAM_ID,
-  Token as SPLToken,
-  AccountInfo as TokenAccountInfo,
   ASSOCIATED_TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
 
@@ -193,7 +191,7 @@ export class Bonding {
     return valuation.mul(new u64(100)).div(new u64(price));
   }
 
-  async purchaseLPToken(amount: u64) {
+  async purchaseLPToken(amount: u64): Promise<TransactionEnvelope> {
     const bondingInfo = await this.getBondingInfo();
 
     const [bondingPda] = await PublicKey.findProgramAddress(
@@ -247,7 +245,7 @@ export class Bonding {
 
   }
 
-  async vestVToken(amount: u64) {
+  async vestVToken(amount: u64): Promise<TransactionEnvelope> {
 
     const bondingInfo = await this.getBondingInfo();
 
@@ -324,7 +322,7 @@ export class Bonding {
 
   }
 
-  async claimVestedToken(tokenMint: PublicKey) {
+  async claimVestedToken(tokenMint: PublicKey): Promise<TransactionEnvelope> {
     const bondingInfo = await this.getBondingInfo();
 
     const owner = this.program.provider.wallet?.publicKey;
