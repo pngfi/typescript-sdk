@@ -8,7 +8,6 @@ import {
 
 import {
   PNG_BONDING_ID,
-  PNG_VESTING_ID,
   DecimalUtil,
   ZERO_DECIMAL,
   deriveAssociatedTokenAddress,
@@ -32,7 +31,6 @@ import {
 } from '@solana/spl-token';
 
 import idl from './idl.json';
-import vestingIdl from './vesting_idl.json';
 
 import { Idl, Program } from '@project-serum/anchor';
 import { TransactionEnvelope } from '@saberhq/solana-contrib';
@@ -40,51 +38,32 @@ import { TransactionEnvelope } from '@saberhq/solana-contrib';
 const BONDING_SEED_PREFIX = 'bonding_authority';
 
 const VESTING_SEED_PREFIX = 'vesting';
-const VESTING_SIGNER_SEED_PREFIX = 'vesting_signer';
-const VESTING_CONFIG_SIGNER_SEED_PREFIX = 'vest_config_signer';
+const VESTING_AUTHORITY_SEED_PREFIX = 'vesting_authority';
 
 export class Bonding {
   public config: BondingConfig;
   private program: Program;
-  private vestingProgram: Program;
 
   constructor(provider: Provider, config: BondingConfig) {
     this.config = config;
     this.program = new Program(idl as Idl, PNG_BONDING_ID, provider as any);
-    this.vestingProgram = new Program(vestingIdl as Idl, PNG_VESTING_ID, provider as any);
   }
 
-  async getVestConfigInfo(): Promise<VestConfigInfo | null> {
-    try {
-   
-      const {
-        vestMint,
-        claimAllDuration,
-        halfLifeDuration,
-        claimableHolder,
-        claimableMint
-      } = await this.vestingProgram.account.vestConfig.fetch(this.config.vestConfig);
-
-      return {
-        vestMint,
-        claimAllDuration: claimAllDuration.toNumber(),
-        halfLifeDuration: halfLifeDuration.toNumber(),
-        claimableHolder,
-        claimableMint
-      }
-    } catch (err) {
-      return null;
-    }
-  }
-
-  async getUserVesting(user: PublicKey) {
+  async getUserVestingAddress(): Promise<PublicKey> {
+    const owner = this.program.provider.wallet?.publicKey || PublicKey.default;
     const [userVestingAddr] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SEED_PREFIX), this.config.vestConfig.toBuffer(), user.toBuffer()],
-      this.vestingProgram.programId
+      [Buffer.from(VESTING_SEED_PREFIX), this.config.addr.toBuffer(), owner.toBuffer()],
+      this.program.programId
     );
 
+    return userVestingAddr;
+  }
+
+  async getUserVesting() {
+    const userVestingAddr = await this.getUserVestingAddress();
+
     try {
-      const vesting = await this.vestingProgram.account.vesting.fetch(userVestingAddr);
+      const vesting = await this.program.account.vesting.fetch(userVestingAddr);
 
       return vesting;
     } catch (err) {
@@ -97,8 +76,8 @@ export class Bonding {
       assetMint,
       tokenMintDecimals,
       assetHolder,
-      vTokenHolder,
       lpInfo,
+      vestConfig,
       lastDecay,
       decayFactor,
       controlVariable,
@@ -106,19 +85,21 @@ export class Bonding {
       bondingSupply
     } = await this.program.account.bonding.fetch(this.config.addr);
 
-    const [assetHolderInfo, vTokenHolderInfo] = await Promise.all([
-      getTokenAccountInfo(this.program.provider as any, assetHolder),
-      getTokenAccountInfo(this.program.provider as any, vTokenHolder)
-    ]);
+    const assetHolderInfo = await getTokenAccountInfo(this.program.provider as any, assetHolder);
 
     return {
       address: this.config.addr,
       assetMint,
       assetMintDecimals: tokenMintDecimals,
       assetHolder,
-      vTokenHolder,
-      vTokenMint: vTokenHolderInfo?.mint || PublicKey.default,
       lpInfo,
+      vestConfig: {
+        vestMint: vestConfig.vestMint,
+        claimAllDuration: vestConfig.claimAllDuration.toNumber(),
+        halfLifeDuration: vestConfig.halfLifeDuration.toNumber(),
+        claimableHolder: vestConfig.claimableHolder,
+        claimableMint: vestConfig.claimableMint
+      },
       assetHolderAmount: assetHolderInfo ? DecimalUtil.fromU64(assetHolderInfo.amount) : ZERO_DECIMAL,
       lastDecay: lastDecay.toNumber(),
       decayFactor: decayFactor.toNumber(),
@@ -138,10 +119,10 @@ export class Bonding {
   }
 
   private async valuation(bondingInfo: BondingInfo, amount: u64): Promise<u64> {
-    const { vTokenMint, assetMint, lpInfo } = bondingInfo;
+    const { vestConfig, assetMint, lpInfo } = bondingInfo;
 
     const [vTokenMintInfo, assetMintInfo, tokenAHolderInfo, tokenBHolderInfo] = await Promise.all([
-      getTokenMintInfo(this.program.provider as any, vTokenMint),
+      getTokenMintInfo(this.program.provider as any, vestConfig.vestMint),
       getTokenMintInfo(this.program.provider as any, assetMint),
       lpInfo ? getTokenAccountInfo(this.program.provider as any, lpInfo.tokenAHolder) : Promise.resolve(null),
       lpInfo ? getTokenAccountInfo(this.program.provider as any, lpInfo.tokenBHolder) : Promise.resolve(null),
@@ -191,7 +172,10 @@ export class Bonding {
     return valuation.mul(new u64(100)).div(new u64(price));
   }
 
-  async purchaseLPToken(amount: u64): Promise<TransactionEnvelope> {
+  async purchaseToken(amount: u64): Promise<TransactionEnvelope> {
+
+    const owner = this.program.provider.wallet?.publicKey;
+
     const bondingInfo = await this.getBondingInfo();
 
     const [bondingPda] = await PublicKey.findProgramAddress(
@@ -199,125 +183,126 @@ export class Bonding {
       this.program.programId
     );
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const vestingAddr = await this.getUserVestingAddress();
 
-    // Resolve or create asset user account;
+    const [vSigner, vNonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(VESTING_AUTHORITY_SEED_PREFIX), vestingAddr.toBuffer()],
+      this.program.programId
+    );
+
+    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, bondingInfo.vestConfig.vestMint);
     const userAssetHolder = await deriveAssociatedTokenAddress(owner, bondingInfo.assetMint);
 
     const { address: userVTokenHolder, ...resolveUserVTokenAccountInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.program.provider.connection,
         owner,
-        bondingInfo.vTokenMint,
+        bondingInfo.vestConfig.vestMint,
         amount
       );
+    
+    const instructions = [];
+    const userVesting = await this.getUserVesting();
+    
+    if (userVesting === null) {
+      instructions.push(
+        this.program.instruction.initVesting(
+          new u64(vNonce),
+          {
+            accounts: {
+              bonding: this.config.addr,
+              vesting: vestingAddr,
+              vestMint: bondingInfo.vestConfig.vestMint,
+              vestedHolder: vestedHolder,
+              vestingSigner: vSigner,
+              payer: owner,
+              rent: SYSVAR_RENT_PUBKEY,
+              clock: SYSVAR_CLOCK_PUBKEY,
+              systemProgram: SystemProgram.programId,
+              tokenProgram: TOKEN_PROGRAM_ID,
+              associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            }
+          }
+        )
+      );
+    } else {
+      instructions.push(
+        this.program.instruction.updateVesting(
+          {
+            accounts: {
+              bonding: this.config.addr,
+              vesting: vestingAddr,
+              vestedHolder: vestedHolder,
+              vestMint: bondingInfo.vestConfig.vestMint,
+              vestSigner: vSigner,
+              owner,
+              clock: SYSVAR_CLOCK_PUBKEY,
+              tokenProgram: TOKEN_PROGRAM_ID,
+            }
+          }
+        )
+      );
+    }
 
-    const purchaseInstruction = this.program.instruction.purchaseWithLiquidity(
-      amount,
-      new u64(1e10),
-      {
-        accounts: {
-          bonding: this.config.addr,
-          bondingPda: bondingPda,
-          assetMint: bondingInfo.assetMint,
-          assetHolder: bondingInfo.assetHolder,
-          vTokenHolder: bondingInfo.vTokenHolder,
-          userAssetHolder: userAssetHolder,
-          userVTokenHolder: userVTokenHolder,
-          owner,
-          tokenAHolder: bondingInfo.lpInfo?.tokenAHolder,
-          tokenBHolder: bondingInfo.lpInfo?.tokenBHolder,
-          tokenProgram: TOKEN_PROGRAM_ID,
+    instructions.push(
+      !!bondingInfo.lpInfo ?
+      this.program.instruction.purchaseWithLiquidity(
+        amount,
+        new u64(1e10),
+        {
+          accounts: {
+            bonding: this.config.addr,
+            bondingPda: bondingPda,
+            assetMint: bondingInfo.assetMint,
+            assetHolder: bondingInfo.assetHolder,
+            userAssetHolder: userAssetHolder,
+            tokenAHolder: bondingInfo.lpInfo?.tokenAHolder,
+            tokenBHolder: bondingInfo.lpInfo?.tokenBHolder,
+            vesting: vestingAddr,
+            vestMint: bondingInfo.vestConfig.vestMint,
+            vestedHolder,
+            vestSigner: vSigner,
+            owner,
+            rent: SYSVAR_RENT_PUBKEY,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          }
         }
-      }
+      ) : 
+      this.program.instruction.purchaseWithStable(
+        amount,
+        new u64(1e10),
+        {
+          accounts: {
+            bonding: this.config.addr,
+            bondingPda: bondingPda,
+            assetMint: bondingInfo.assetMint,
+            assetHolder: bondingInfo.assetHolder,
+            userAssetHolder: userAssetHolder,
+            vesting: vestingAddr,
+            vestMint: bondingInfo.vestConfig.vestMint,
+            vestedHolder,
+            vestSigner: vSigner,
+            owner,
+            rent: SYSVAR_RENT_PUBKEY,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          }
+        }
+      )
     );
 
     return new TransactionEnvelope(
       this.program.provider as any,
       [
         ...resolveUserVTokenAccountInstrucitons.instructions,
-        purchaseInstruction
+        ...instructions
       ],
       [
         ...resolveUserVTokenAccountInstrucitons.signers
       ]
-    );
-
-  }
-
-  async vestVToken(amount: u64): Promise<TransactionEnvelope> {
-
-    const bondingInfo = await this.getBondingInfo();
-
-    const owner = this.program.provider.wallet?.publicKey;
-    const vestingInstructions = [];
-
-    const [vestingAddr] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SEED_PREFIX), this.config.vestConfig.toBuffer(), owner.toBuffer()],
-      this.vestingProgram.programId
-    );
-
-    const vestingAccountInfo = await this.program.provider.connection.getAccountInfo(vestingAddr);
-
-    const [vSigner, nonce] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SIGNER_SEED_PREFIX), vestingAddr.toBuffer()],
-      this.vestingProgram.programId
-    );
-
-    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, bondingInfo.vTokenMint);
-    const userVTokenHolder = await deriveAssociatedTokenAddress(owner, bondingInfo.vTokenMint);
-
-    if (!vestingAccountInfo) {
-      vestingInstructions.push(this.vestingProgram.instruction.initVesting(nonce, {
-        accounts: {
-          vestConfig: this.config.vestConfig,
-          vesting: vestingAddr,
-          vestMint: bondingInfo.vTokenMint,
-          vestedHolder,
-          vestingSigner: vSigner,
-          payer: owner,
-          rent: SYSVAR_RENT_PUBKEY,
-          clock: SYSVAR_CLOCK_PUBKEY,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        }
-      }));
-    }
-
-    vestingInstructions.push(this.vestingProgram.instruction.update({
-      accounts: {
-        vestConfig: this.config.vestConfig,
-        vesting: vestingAddr,
-        vestedHolder,
-        vestMint: bondingInfo.vTokenMint,
-        vestingSigner: vSigner,
-        owner,
-        clock: SYSVAR_CLOCK_PUBKEY,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      }
-    }));
-
-    vestingInstructions.push(this.vestingProgram.instruction.vest(
-      amount,
-      {
-        accounts: {
-          vesting: vestingAddr,
-          vestedHolder,
-          userVestHolder: userVTokenHolder,
-          owner,
-          clock: SYSVAR_CLOCK_PUBKEY,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        }
-      }
-    ));
-
-    return new TransactionEnvelope(
-      this.program.provider as any,
-      [
-        ...vestingInstructions
-      ],
-      []
     );
 
   }
@@ -327,25 +312,22 @@ export class Bonding {
 
     const owner = this.program.provider.wallet?.publicKey;
 
-    const [vestingAddr] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SEED_PREFIX), this.config.vestConfig.toBuffer(), owner.toBuffer()],
-      this.vestingProgram.programId
-    );
+    const vestingAddr = await this.getUserVestingAddress();
 
     const [vSigner] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SIGNER_SEED_PREFIX), vestingAddr.toBuffer()],
-      this.vestingProgram.programId
+      [Buffer.from(VESTING_AUTHORITY_SEED_PREFIX), vestingAddr.toBuffer()],
+      this.program.programId
     );
 
-    const [vcSigner] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
-      this.vestingProgram.programId
+    const [bondingPda] = await PublicKey.findProgramAddress(
+      [Buffer.from(BONDING_SEED_PREFIX), this.config.addr.toBuffer()],
+      this.program.programId
     );
 
-    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, bondingInfo.vTokenMint);
+    const vestedHolder = await deriveAssociatedTokenAddress(vSigner, bondingInfo.vestConfig.vestMint);
 
     const claimableHolder = await deriveAssociatedTokenAddress(
-      vcSigner,
+      bondingPda,
       tokenMint
     );
 
@@ -356,38 +338,39 @@ export class Bonding {
         tokenMint
       );
 
-    const updateInstruction = this.vestingProgram.instruction.update({
+    // const updateInstruction = this.program.instruction.update({
+    //   accounts: {
+    //     vestConfig: this.config.vestConfig,
+    //     vesting: vestingAddr,
+    //     vestedHolder,
+    //     vestMint: bondingInfo.vTokenMint,
+    //     vestingSigner: vSigner,
+    //     owner,
+    //     clock: SYSVAR_CLOCK_PUBKEY,
+    //     tokenProgram: TOKEN_PROGRAM_ID,
+    //   }
+    // });
+
+    const claimInstruction = this.program.instruction.claim({
       accounts: {
-        vestConfig: this.config.vestConfig,
+        bonding: this.config.addr,
+        bondingPda: bondingPda,
+        claimableHolder: claimableHolder,
         vesting: vestingAddr,
-        vestedHolder,
-        vestMint: bondingInfo.vTokenMint,
-        vestingSigner: vSigner,
+        vestedHolder: vestedHolder,
+        vestMint: bondingInfo.vestConfig.vestMint,
+        vestSigner: vSigner,
+        userClaimableHolder: userTokenHolder,
         owner,
         clock: SYSVAR_CLOCK_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
       }
     });
 
-    const claimInstruction = this.vestingProgram.instruction.claim({
-      accounts: {
-        vestConfig: this.config.vestConfig,
-        vestConfigSigner: vcSigner,
-        claimableHolder,
-        vesting: vestingAddr,
-        userClaimableHolder: userTokenHolder,
-        owner,
-        clock: SYSVAR_CLOCK_PUBKEY,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      instructions: [updateInstruction],
-    });
-
     return new TransactionEnvelope(
       this.program.provider as any,
       [
         ...resolveUserTokenAccountInstrucitons.instructions,
-        updateInstruction,
         claimInstruction
       ],
       [
@@ -405,10 +388,6 @@ export class Bonding {
     claimableAmount: u64,
     updateTime: number //in seconds
   ): u64 {
-  
-    if (updateTime <= lastUpdatedTime) {
-      throw Error('update time should gt lastUpdateTime');
-    }
   
     //no more vested amount
     if (vestedHolderAmount.lte(ZERO_U64)) {

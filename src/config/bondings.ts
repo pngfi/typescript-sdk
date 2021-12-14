@@ -7,7 +7,6 @@ export const mainnetBondings: BondingConfig[] = [
 
 export const devnetBondings: BondingConfig[] = [
   {
-    addr: new PublicKey('Cxo28p6tkn5R1bTLdM7HHmLoyrfiG6WnLwMJLzMirpZo'),
-    vestConfig: new PublicKey('7tJr8aPhtuKtWhijHLaDmMLp2ddDZfqpKeUd39MymfE9')
+    addr: new PublicKey('6iyQEv8eRkH88wrDwfqZ1XDakqfS7zBvwFuYH8F3s3s9')
   }
 ];

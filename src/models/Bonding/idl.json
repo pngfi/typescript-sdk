@@ -16,11 +16,6 @@
           "isSigner": false
         },
         {
-          "name": "vTokenHolder",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "assetMint",
           "isMut": false,
           "isSigner": false
@@ -29,6 +24,21 @@
           "name": "assetHolder",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "claimableMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "claimableHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestMint",
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "payer",
@@ -47,6 +57,11 @@
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -73,6 +88,14 @@
           "type": "u64"
         },
         {
+          "name": "halfLifeDuration",
+          "type": "i64"
+        },
+        {
+          "name": "claimAllDuration",
+          "type": "i64"
+        },
+        {
           "name": "liquidityPool",
           "type": {
             "option": {
@@ -83,11 +106,77 @@
       ]
     },
     {
-      "name": "purchaseWithStable",
+      "name": "initVesting",
       "accounts": [
         {
           "name": "bonding",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vesting",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vestedHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestingSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "purchaseWithStable",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -106,23 +195,33 @@
           "isSigner": false
         },
         {
-          "name": "vTokenHolder",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "userAssetHolder",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "userVTokenHolder",
+          "name": "vesting",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vestMint",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "owner",
+          "name": "vestedHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestSigner",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -147,7 +246,7 @@
       "accounts": [
         {
           "name": "bonding",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -166,24 +265,9 @@
           "isSigner": false
         },
         {
-          "name": "vTokenHolder",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "userAssetHolder",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "userVTokenHolder",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": true
         },
         {
           "name": "tokenAHolder",
@@ -194,6 +278,31 @@
           "name": "tokenBHolder",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "vesting",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vestMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestedHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "tokenProgram",
@@ -211,6 +320,113 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "updateVesting",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vesting",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestedHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bondingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "claimableHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vesting",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestedHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vestSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userClaimableHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "updateBondingSupply",
@@ -240,10 +456,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "vTokenHolder",
-            "type": "publicKey"
-          },
           {
             "name": "assetMint",
             "type": "publicKey"
@@ -291,12 +503,82 @@
                 "defined": "LpInfo"
               }
             }
+          },
+          {
+            "name": "vestConfig",
+            "type": {
+              "defined": "VestConfig"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vesting",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bonding",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "nonce",
+            "type": "u8"
+          },
+          {
+            "name": "vestedHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "claimableAmount",
+            "type": "u64"
+          },
+          {
+            "name": "lastUpdatedTime",
+            "type": "i64"
+          },
+          {
+            "name": "lastVestTime",
+            "type": "i64"
           }
         ]
       }
     }
   ],
   "types": [
+    {
+      "name": "VestConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "claimableMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "claimableHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "vestMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "halfLifeDuration",
+            "type": "i64"
+          },
+          {
+            "name": "claimAllDuration",
+            "type": "i64"
+          }
+        ]
+      }
+    },
     {
       "name": "LpInfo",
       "type": {
@@ -321,8 +603,5 @@
         ]
       }
     }
-  ],
-  "metadata": {
-    "address": "3PuDqvYBpYaHS2dPBrV1YgFJQD9xzz9o8PP4by2VE22S"
-  }
+  ]
 }

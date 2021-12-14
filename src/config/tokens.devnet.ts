@@ -181,14 +181,6 @@ export const tokens: Token[] = [
   },
 	{
     "chainId": 103,
-    "mint": "vPN2hmAEYMsR3eFngJsMQJHjxhKsZ3WXbco9zPRRcZ2",
-    "symbol": "vPNG",
-    "name": "Penguin Vesting Token",
-    "decimals": 6,
-		"display": false
-  },
-	{
-    "chainId": 103,
     "mint": "sPN37XDJaxEKaeVBd6sB8ttYwGY4ANKYQgxhMB4qsiL",
     "symbol": "sPNG",
     "name": "Penguin Staking Token",

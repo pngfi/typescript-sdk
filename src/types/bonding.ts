@@ -11,7 +11,6 @@ export type LPInfo = {
 
 export type BondingConfig = {
   addr: PublicKey;
-  vestConfig: PublicKey;
 }
 
 export type BondingInfo = {
@@ -20,9 +19,8 @@ export type BondingInfo = {
   assetMintDecimals: number;
   assetHolder: PublicKey;
   assetHolderAmount: Decimal;
-  vTokenHolder: PublicKey;
-  vTokenMint: PublicKey;
   lpInfo: LPInfo;
+  vestConfig: VestConfigInfo;
   lastDecay: number;
   decayFactor: number;
   controlVariable: number;
