@@ -181,6 +181,45 @@ export function computeLPPrice(pool: PoolInfo, prices: Record<string, number>): 
 
 }
 
+export function getTokenPriceViaPools(
+  tokenSymbol: string, 
+  poolInfos: PoolInfo[], 
+  prices: Record<string, number>
+): number {
+
+  const pool = poolInfos.find(pool => (pool.tokenA.symbol || pool.tokenB.symbol) === tokenSymbol);
+
+  if (!pool) {
+    return 0;
+  }
+
+  const { tokenA, tokenB } = pool;
+
+  const inputTokenCount = DecimalUtil.fromU64(
+    tokenA.amount,
+    tokenA.decimals
+  ).toNumber();
+
+  const outputTokenCount = DecimalUtil.fromU64(
+    tokenB.amount,
+    tokenB.decimals
+  ).toNumber();
+
+  const a2brate = outputTokenCount / inputTokenCount;
+  
+  let priceA = prices[tokenA.symbol] || 0,
+    priceB = prices[tokenB.symbol] || 0;
+
+  if (priceA && !priceB) {
+    priceB = priceA / a2brate;
+  } else if (priceB && !priceA) {
+    priceA = priceB * a2brate;
+  }
+
+  return tokenSymbol === tokenA.symbol ? priceA : priceB;
+
+}
+
 export function computeRate(
   pool: PoolInfo,
   inputToken?: Token

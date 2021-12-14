@@ -9,10 +9,6 @@ export type LPInfo = {
   tokenBDecimals: number;
 }
 
-export type BondingConfig = {
-  addr: PublicKey;
-}
-
 export type BondingInfo = {
   address: PublicKey;
   assetMint: PublicKey;

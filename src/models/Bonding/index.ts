@@ -1,10 +1,6 @@
 import type { Provider } from '@saberhq/solana-contrib';
 
-import { 
-  BondingConfig, 
-  BondingInfo,
-  VestConfigInfo
-} from '../../types';
+import { BondingInfo } from '../../types';
 
 import {
   PNG_BONDING_ID,
@@ -41,29 +37,28 @@ const VESTING_SEED_PREFIX = 'vesting';
 const VESTING_AUTHORITY_SEED_PREFIX = 'vesting_authority';
 
 export class Bonding {
-  public config: BondingConfig;
+  public address: PublicKey;
   private program: Program;
 
-  constructor(provider: Provider, config: BondingConfig) {
-    this.config = config;
+  constructor(provider: Provider, address: PublicKey) {
+    this.address = address;
     this.program = new Program(idl as Idl, PNG_BONDING_ID, provider as any);
   }
 
   async getUserVestingAddress(): Promise<PublicKey> {
     const owner = this.program.provider.wallet?.publicKey || PublicKey.default;
     const [userVestingAddr] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SEED_PREFIX), this.config.addr.toBuffer(), owner.toBuffer()],
+      [Buffer.from(VESTING_SEED_PREFIX), this.address.toBuffer(), owner.toBuffer()],
       this.program.programId
     );
 
     return userVestingAddr;
   }
 
-  async getUserVesting() {
-    const userVestingAddr = await this.getUserVestingAddress();
+  async getVestingInfo(addr: PublicKey) {
 
     try {
-      const vesting = await this.program.account.vesting.fetch(userVestingAddr);
+      const vesting = await this.program.account.vesting.fetch(addr);
 
       return vesting;
     } catch (err) {
@@ -83,12 +78,12 @@ export class Bonding {
       controlVariable,
       totalDebt,
       bondingSupply
-    } = await this.program.account.bonding.fetch(this.config.addr);
+    } = await this.program.account.bonding.fetch(this.address);
 
     const assetHolderInfo = await getTokenAccountInfo(this.program.provider as any, assetHolder);
 
     return {
-      address: this.config.addr,
+      address: this.address,
       assetMint,
       assetMintDecimals: tokenMintDecimals,
       assetHolder,
@@ -179,7 +174,7 @@ export class Bonding {
     const bondingInfo = await this.getBondingInfo();
 
     const [bondingPda] = await PublicKey.findProgramAddress(
-      [Buffer.from(BONDING_SEED_PREFIX), this.config.addr.toBuffer()],
+      [Buffer.from(BONDING_SEED_PREFIX), this.address.toBuffer()],
       this.program.programId
     );
 
@@ -202,7 +197,9 @@ export class Bonding {
       );
     
     const instructions = [];
-    const userVesting = await this.getUserVesting();
+
+    const userVestingAddress = await this.getUserVestingAddress();
+    const userVesting = await this.getVestingInfo(userVestingAddress);
     
     if (userVesting === null) {
       instructions.push(
@@ -210,7 +207,7 @@ export class Bonding {
           new u64(vNonce),
           {
             accounts: {
-              bonding: this.config.addr,
+              bonding: this.address,
               vesting: vestingAddr,
               vestMint: bondingInfo.vestConfig.vestMint,
               vestedHolder: vestedHolder,
@@ -225,23 +222,6 @@ export class Bonding {
           }
         )
       );
-    } else {
-      instructions.push(
-        this.program.instruction.updateVesting(
-          {
-            accounts: {
-              bonding: this.config.addr,
-              vesting: vestingAddr,
-              vestedHolder: vestedHolder,
-              vestMint: bondingInfo.vestConfig.vestMint,
-              vestSigner: vSigner,
-              owner,
-              clock: SYSVAR_CLOCK_PUBKEY,
-              tokenProgram: TOKEN_PROGRAM_ID,
-            }
-          }
-        )
-      );
     }
 
     instructions.push(
@@ -251,7 +231,7 @@ export class Bonding {
         new u64(1e10),
         {
           accounts: {
-            bonding: this.config.addr,
+            bonding: this.address,
             bondingPda: bondingPda,
             assetMint: bondingInfo.assetMint,
             assetHolder: bondingInfo.assetHolder,
@@ -275,7 +255,7 @@ export class Bonding {
         new u64(1e10),
         {
           accounts: {
-            bonding: this.config.addr,
+            bonding: this.address,
             bondingPda: bondingPda,
             assetMint: bondingInfo.assetMint,
             assetHolder: bondingInfo.assetHolder,
@@ -320,7 +300,7 @@ export class Bonding {
     );
 
     const [bondingPda] = await PublicKey.findProgramAddress(
-      [Buffer.from(BONDING_SEED_PREFIX), this.config.addr.toBuffer()],
+      [Buffer.from(BONDING_SEED_PREFIX), this.address.toBuffer()],
       this.program.programId
     );
 
@@ -338,22 +318,9 @@ export class Bonding {
         tokenMint
       );
 
-    // const updateInstruction = this.program.instruction.update({
-    //   accounts: {
-    //     vestConfig: this.config.vestConfig,
-    //     vesting: vestingAddr,
-    //     vestedHolder,
-    //     vestMint: bondingInfo.vTokenMint,
-    //     vestingSigner: vSigner,
-    //     owner,
-    //     clock: SYSVAR_CLOCK_PUBKEY,
-    //     tokenProgram: TOKEN_PROGRAM_ID,
-    //   }
-    // });
-
     const claimInstruction = this.program.instruction.claim({
       accounts: {
-        bonding: this.config.addr,
+        bonding: this.address,
         bondingPda: bondingPda,
         claimableHolder: claimableHolder,
         vesting: vestingAddr,

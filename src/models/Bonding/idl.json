@@ -201,7 +201,7 @@
         },
         {
           "name": "vesting",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -281,7 +281,7 @@
         },
         {
           "name": "vesting",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

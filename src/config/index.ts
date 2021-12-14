@@ -1,5 +1,5 @@
-import type { Cluster } from '@solana/web3.js';
-import { Token, PoolConfig, BondingConfig } from '../types';
+import type { Cluster, PublicKey } from '@solana/web3.js';
+import { Token, PoolConfig } from '../types';
 
 import { devnetPools, mainnetPools } from './pools';
 import { devnetBondings, mainnetBondings } from './bondings';
@@ -19,7 +19,7 @@ export const pools: Record<Cluster, PoolConfig[]> = {
   'testnet': devnetPools
 }
 
-export const bondings: Record<Cluster, BondingConfig[]> = {
+export const bondings: Record<Cluster, PublicKey[]> = {
   'devnet': devnetBondings,
   'mainnet-beta': mainnetBondings,
   'testnet': devnetBondings
