@@ -8,5 +8,6 @@ export type Token = {
   chainId?: number;
   logoURI?: string;
   fetchPrice?: boolean;
+  isLP?: boolean;
   display?: boolean;
 }

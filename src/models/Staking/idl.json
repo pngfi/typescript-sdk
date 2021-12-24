@@ -11,7 +11,7 @@
           "isSigner": true
         },
         {
-          "name": "authority",
+          "name": "stakingPda",
           "isMut": false,
           "isSigner": false
         },
@@ -27,7 +27,7 @@
         },
         {
           "name": "rewardsHolder",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -72,11 +72,11 @@
         },
         {
           "name": "rebaseRateNumerator",
-          "type": "u128"
+          "type": "u64"
         },
         {
           "name": "rebaseRateDenominator",
-          "type": "u128"
+          "type": "u64"
         },
         {
           "name": "rebaseSupply",
@@ -89,11 +89,11 @@
       "accounts": [
         {
           "name": "staking",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "stakingPda",
           "isMut": false,
           "isSigner": false
         },
@@ -136,15 +136,61 @@
       ]
     },
     {
-      "name": "unstake",
+      "name": "stackAll",
       "accounts": [
         {
           "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPda",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStakeTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unstake",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPda",
           "isMut": false,
           "isSigner": false
         },
@@ -237,7 +283,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "stakingPda",
           "isMut": false,
           "isSigner": false
         },
@@ -250,6 +296,11 @@
           "name": "tokenHolder",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
         },
         {
           "name": "tokenProgram",
@@ -287,10 +338,6 @@
             "type": "u8"
           },
           {
-            "name": "isInitialized",
-            "type": "bool"
-          },
-          {
             "name": "adminAuth",
             "type": "publicKey"
           },
@@ -304,11 +351,11 @@
           },
           {
             "name": "rebaseRateNumerator",
-            "type": "u128"
+            "type": "u64"
           },
           {
             "name": "rebaseRateDenominator",
-            "type": "u128"
+            "type": "u64"
           },
           {
             "name": "rebaseSupply",

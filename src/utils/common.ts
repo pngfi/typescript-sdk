@@ -1,5 +1,3 @@
-import type { Cluster } from '@solana/web3.js';
-
 import { PublicKey } from '@solana/web3.js';
 
 import { PoolInfo, Token } from '../types';
