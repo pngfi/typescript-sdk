@@ -183,7 +183,7 @@ export const tokens: Token[] = [
 		"fetchPrice": true
 	}, {
     "chainId": 103,
-    "mint": "DK8pvSmxbHQXGya1cRBd2Mn3v72Bfcu6Gac4FbxMKPgo",
+    "mint": "F5EuhzeL66feQH6CyxufvB19FzfYXR4osSwjS8rHSQmr",
     "symbol": "sPNG",
     "name": "Penguin Staking Token",
     "decimals": 6,

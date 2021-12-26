@@ -6,7 +6,7 @@ export const mainnetStakings: StakingConfig[] = [
 
 export const devnetStakings: StakingConfig[] = [
   {
-    address: new PublicKey('21pA3fSU523rGbJxRdWbTR4yLxPk8QBenUo9facXM3xY'),
+    address: new PublicKey('EFes66miKQkoSHsYwFBiKTaSKvX9Cd8CQgCSqLrZf38'),
     vestConfig: new PublicKey('HbrVWaVLb98ozeSiC69tt9T7TXYB8j2qyCke6qqEMC97'),
     payoutAsset: new PublicKey('PNGXZxRnRwixr7jrMSctAErSTF5SRnPQcuakkWRHe4h')
   }
