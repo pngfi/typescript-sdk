@@ -6,8 +6,8 @@ export const mainnetBondings: BondingConfig[] = [
 
 export const devnetBondings: BondingConfig[] = [
   {
-    address: new PublicKey('dCN5mwZbDeWCHfp9NF7tv9VVHPmjPSKLpUnKc4WC8bJ'),
-    staking: new PublicKey('EFes66miKQkoSHsYwFBiKTaSKvX9Cd8CQgCSqLrZf38'),
-    payoutAsset: new PublicKey('PNGXZxRnRwixr7jrMSctAErSTF5SRnPQcuakkWRHe4h')
+    address: new PublicKey('BBDBde2rgT9Q9gSa7Etz8LpXVA5RSTK4bzGZd3jBf3PA'),
+    staking: new PublicKey('3sHcGhf9YN9DTRvHM33s7T4ZvqtSTAn1mLASHyg4mufs'),
+    payoutAsset: new PublicKey('PNGmGQ7SwKTHHPCRgnznYbyTPkrAxcAPLqpgNDYNP1g')
   }
 ];
