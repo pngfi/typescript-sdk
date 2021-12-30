@@ -10,7 +10,7 @@
     "build": "tsc -p src",
     "watch": "tsc -w -p src",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
-    "prepare": "husky install",
+    "prepare": "yarn build",
     "prepublishOnly": "tsc -p src",
     "test": "jest"
   },
