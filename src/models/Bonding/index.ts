@@ -1,5 +1,5 @@
-import { 
-  BondingInfo, 
+import {
+  BondingInfo,
   BondingConfig,
   VestConfigInfo,
   StakingInfo,
@@ -16,14 +16,16 @@ import {
   resolveOrCreateAssociatedTokenAddress,
   ZERO_U64,
   getTokenAccountInfo,
-  getTokenMintInfo
+  getTokenMintInfo,
+  createTokenAccount
 } from '../../utils';
 
 import {
   PublicKey,
   SYSVAR_RENT_PUBKEY,
   SYSVAR_CLOCK_PUBKEY,
-  SystemProgram
+  SystemProgram,
+  Keypair
 } from '@solana/web3.js';
 
 import {
@@ -34,7 +36,7 @@ import {
 
 import idl from './idl.json';
 
-import { Idl, Program, Provider } from '@project-serum/anchor';
+import { BN, Idl, Program, Provider } from '@project-serum/anchor';
 import { TransactionEnvelope } from '@saberhq/solana-contrib';
 import Decimal from 'decimal.js';
 
@@ -56,7 +58,8 @@ export class Bonding {
       depositHolder,
       depositTokenMint,
       bondingSupply,
-      maxPayout,
+      maxPayoutFactor,
+      initDebt,
       maxDebt,
       minPrice,
       totalDebt,
@@ -66,7 +69,7 @@ export class Bonding {
     } = await this.program.account.bonding.fetch(this.config.address);
 
     const depositHolderInfo = await getTokenAccountInfo(this.program.provider as any, depositHolder);
-   
+
     return {
       address: this.config.address,
       payoutHolder,
@@ -75,7 +78,8 @@ export class Bonding {
       depositTokenMint,
       depositHolderAmount: depositHolderInfo?.amount || ZERO_U64,
       bondingSupply,
-      maxPayout,
+      maxPayoutFactor,
+      initDebt,
       maxDebt,
       minPrice,
       totalDebt,
@@ -101,32 +105,38 @@ export class Bonding {
     const { totalDebt, bondingSupply, controlVariable, minPrice } = bondingInfo;
     const debtRatio = this.debtRatio(totalDebt, bondingSupply, payoutTokenDecimals);
 
+
     const price = debtRatio
       .mul(new u64(controlVariable))
       .div(new u64(Math.pow(10, payoutTokenDecimals - 5)));
+
+    console.log('p', price.toString())
+
+    const p = price.lt(minPrice) ? minPrice : price;
+    console.log('Internal Bond Price', p.toString());
 
     return price.lt(minPrice) ? minPrice : price;
   }
 
   calcPayout(
-    bondingInfo: BondingInfo, 
-    payoutTokenDecimals: number, 
-    depositTokenDecimals: number, 
+    bondingInfo: BondingInfo,
+    payoutTokenDecimals: number,
+    depositTokenDecimals: number,
     amount = 1
   ): PayoutInfo {
 
     const valuation = this.valueOf(
-      DecimalUtil.toU64(new Decimal(amount), depositTokenDecimals), 
-      payoutTokenDecimals, 
+      DecimalUtil.toU64(new Decimal(amount), depositTokenDecimals),
+      payoutTokenDecimals,
       depositTokenDecimals
     );
-    
+
     const price = this.price(bondingInfo, payoutTokenDecimals);
 
     const payout = valuation.mul(new u64(Math.pow(10, 5))).div(price);
 
     return {
-      payoutAmount: payout, 
+      payoutAmount: payout,
       internalPrice: price
     }
 
@@ -209,7 +219,7 @@ export class Bonding {
   //     deriveAssociatedTokenAddress(vSigner, vestConfigInfo.vestMint),
   //     deriveAssociatedTokenAddress(owner, bondingInfo.assetMint)
   //   ]);
-   
+
   //   const { address: userVTokenHolder, ...resolveUserVTokenAccountInstrucitons } =
   //     await resolveOrCreateAssociatedTokenAddress(
   //       this.program.provider.connection,
@@ -299,5 +309,79 @@ export class Bonding {
 
   // }
 
-  
+  async initBonding(
+    depositTokenMint: PublicKey,
+    payoutTokenMint: PublicKey,
+    bondingKP: Keypair,
+    controlVariable: string,
+    decayFactor: string,
+    bondingSupply: string,
+    initDebt: string,
+    maxDebt: string,
+    minPrice: string,
+    maxPayoutFactor: string,
+  ) {
+
+    const owner = this.program.provider.wallet?.publicKey;
+
+    // const bondingKP = Keypair.generate();
+    const [bondingPda, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(BONDING_SEED_PREFIX), bondingKP.publicKey.toBuffer()],
+      this.program.programId
+    );
+
+    const payoutHolder = await deriveAssociatedTokenAddress(bondingPda, payoutTokenMint);
+
+    const { address: depositHolder, ...resolveHolderInstrucitons } =
+      await createTokenAccount({
+        provider: this.program.provider as any,
+        mint: depositTokenMint,
+        owner: bondingPda
+      });
+
+    const initInstruction = this.program.instruction.initBonding(
+      new BN(nonce),
+      new BN(initDebt),
+      new BN(controlVariable),
+      new BN(decayFactor),
+      new BN(bondingSupply),
+      new BN(maxPayoutFactor),
+      new BN(maxDebt),
+      new BN(minPrice),
+      {
+        accounts: {
+          bonding: bondingKP.publicKey,
+          bondingPda: bondingPda,
+          payoutHolder: payoutHolder,
+          payoutTokenMint: payoutTokenMint,
+          depositTokenMint: depositTokenMint,
+          depositHolder: depositHolder,
+
+          payer: owner,
+          rent: SYSVAR_RENT_PUBKEY,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+        },
+      }
+    );
+
+    const tmpTransaction = new TransactionEnvelope(
+      this.program.provider as any,
+      [
+        ...resolveHolderInstrucitons.instructions,
+        initInstruction
+      ],
+      [
+        ...resolveHolderInstrucitons.signers,
+        bondingKP
+      ]
+    );
+    return {
+      tmpTransaction,
+      payoutHolder
+    }
+  }
+
+
 }

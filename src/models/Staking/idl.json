@@ -136,7 +136,7 @@
       ]
     },
     {
-      "name": "stackAll",
+      "name": "stakeAll",
       "accounts": [
         {
           "name": "staking",

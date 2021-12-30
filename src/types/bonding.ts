@@ -27,7 +27,8 @@ export type BondingInfo = {
   depositTokenMint: PublicKey;
   depositHolderAmount: u64;
   bondingSupply: u64;
-  maxPayout: number;
+  maxPayoutFactor: u64,
+  initDebt: u64,
   maxDebt: u64;
   minPrice: u64;
   totalDebt: u64;

@@ -1,6 +1,6 @@
 import type { Provider } from '@saberhq/solana-contrib';
 
-import { 
+import {
   StakingInfo,
   StakingConfig,
   VestConfigInfo
@@ -13,20 +13,22 @@ import {
   PNG_VESTING_ID,
   getTokenAccountInfo,
   deriveAssociatedTokenAddress,
-  resolveOrCreateAssociatedTokenAddress
+  resolveOrCreateAssociatedTokenAddress,
+  transferToken
 } from '../../utils';
 
 import {
   u64,
   TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  Token as SPLToken
 } from '@solana/spl-token';
 
-import { 
+import {
   PublicKey,
   SYSVAR_RENT_PUBKEY,
   SYSVAR_CLOCK_PUBKEY,
-  SystemProgram 
+  SystemProgram
 } from '@solana/web3.js';
 
 import idl from './idl.json';
@@ -105,7 +107,7 @@ export class Staking {
     } = await this.program.account.staking.fetch(this.config.address);
 
     const tokenHolderInfo = await getTokenAccountInfo(this.program.provider as any, tokenHolder);
-    
+
     return {
       tokenMint,
       sTokenMint: stakeTokenMint,
@@ -130,12 +132,12 @@ export class Staking {
       [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
       this.vestingProgram.programId
     );
-  
+
     const [claimableHolder, userTokenAccount] = await Promise.all([
       deriveAssociatedTokenAddress(vcSigner, vestConfigInfo.claimableMint),
       deriveAssociatedTokenAddress(owner, vestConfigInfo.claimableMint)
     ]);
-  
+
     const { address: userVTokenAccount, ...resolveUserVTokenAccountInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.vestingProgram.provider.connection,
@@ -174,7 +176,7 @@ export class Staking {
     const owner = this.program.provider.wallet?.publicKey;
 
     const instructions = [];
-    
+
     const [userVestingAddress, vestConfigInfo] = await Promise.all([
       this.getUserVestingAddress(),
       this.getVestConfigInfo()
@@ -231,8 +233,8 @@ export class Staking {
       })
     );
 
-     // vest all
-     instructions.push(
+    // vest all
+    instructions.push(
       this.vestingProgram.instruction.vestAll({
         accounts: {
           vesting: userVestingAddress,
@@ -272,7 +274,7 @@ export class Staking {
         owner,
         stakingInfo.sTokenMint
       );
-    
+
     const stakeInstruction = this.program.instruction.stake(amount, {
       accounts: {
         staking: this.config.address,
@@ -316,8 +318,8 @@ export class Staking {
         owner,
         stakingInfo.sTokenMint
       );
-    
-    const stakeInstruction = this.program.instruction.stackAll({
+
+    const stakeInstruction = this.program.instruction.stakeAll({
       accounts: {
         staking: this.config.address,
         stakingPda,
@@ -357,7 +359,7 @@ export class Staking {
       deriveAssociatedTokenAddress(vSigner, vestConfigInfo.vestMint),
       deriveAssociatedTokenAddress(owner, vestConfigInfo.vestMint),
     ]);
-    
+
     const updateInstruction = this.vestingProgram.instruction.update({
       accounts: {
         vestConfig: this.config.vestConfig,
@@ -409,7 +411,7 @@ export class Staking {
       deriveAssociatedTokenAddress(owner, stakeConfigInfo.tokenMint),
       deriveAssociatedTokenAddress(owner, stakeConfigInfo.sTokenMint)
     ]);
-   
+
     const unstakeInstruction = this.program.instruction.unstake(amount, {
       accounts: {
         staking: this.config.address,
@@ -440,7 +442,7 @@ export class Staking {
       this.getUserVestingAddress(),
       this.getVestConfigInfo()
     ]);
-    
+
     const [vcSigner] = await PublicKey.findProgramAddress(
       [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
       this.vestingProgram.programId
@@ -536,5 +538,79 @@ export class Staking {
     return claimableAmount.add(DecimalUtil.toU64(newClaimableAmount));
   }
 
+  async vestStake(amount: u64): Promise<TransactionEnvelope> {
+
+    const owner = this.program.provider.wallet?.publicKey;
+
+    const vestConfig = await this.getVestConfigInfo();
+
+    const [vestingPda, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
+      this.vestingProgram.programId
+    );
+
+    const userClaimableHolder = await deriveAssociatedTokenAddress(
+      owner,
+      vestConfig.claimableMint
+    );
+    const userVestHolder = await deriveAssociatedTokenAddress(
+      owner,
+      vestConfig.vestMint
+    );
+
+    const vestStakeInstruction = this.vestingProgram.instruction.stake(
+      amount,
+      {
+        accounts: {
+          vestConfig: this.config.vestConfig,
+          vestConfigSigner: vestingPda,
+          vestMint: vestConfig?.vestMint,
+
+          claimableHolder: vestConfig?.claimableHolder,
+          userClaimableHolder: userClaimableHolder,
+          userVestHolder: userVestHolder,
+
+          owner,
+          tokenProgram: TOKEN_PROGRAM_ID
+        }
+      }
+    )
+
+    return new TransactionEnvelope(
+      this.vestingProgram.provider as any,
+      [
+        vestStakeInstruction
+      ],
+      []
+    )
+  }
+
+  async transferToken(
+    tokenMint: PublicKey,
+    destination: PublicKey,
+    amount: u64,
+  ): Promise<TransactionEnvelope> {
+    const payer = this.program.provider.wallet?.publicKey;
+
+    const source = await deriveAssociatedTokenAddress(
+      payer,
+      tokenMint
+    );
+
+    const instructions = await transferToken(
+      source,
+      destination,
+      amount,
+      payer
+    );
+
+    return new TransactionEnvelope(
+      this.vestingProgram.provider as any,
+      [
+        ...instructions.instructions
+      ],
+      []
+    )
+  }
 
 }

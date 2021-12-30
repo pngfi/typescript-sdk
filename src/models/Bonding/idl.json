@@ -67,6 +67,10 @@
           "type": "u8"
         },
         {
+          "name": "initDebt",
+          "type": "u64"
+        },
+        {
           "name": "controlVariable",
           "type": "u64"
         },
@@ -79,8 +83,8 @@
           "type": "u64"
         },
         {
-          "name": "maxPayout",
-          "type": "u32"
+          "name": "maxPayoutFactor",
+          "type": "u64"
         },
         {
           "name": "maxDebt",
@@ -158,6 +162,27 @@
       ]
     },
     {
+      "name": "transferAdminAuth",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newAdminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "updateBonding",
       "accounts": [
         {
@@ -212,12 +237,16 @@
             "type": "u8"
           },
           {
+            "name": "depositAmount",
+            "type": "u64"
+          },
+          {
             "name": "bondingSupply",
             "type": "u64"
           },
           {
-            "name": "maxPayout",
-            "type": "u32"
+            "name": "maxPayoutFactor",
+            "type": "u64"
           },
           {
             "name": "maxDebt",
@@ -272,9 +301,9 @@
             }
           },
           {
-            "name": "maxPayout",
+            "name": "maxPayoutFactor",
             "type": {
-              "option": "u32"
+              "option": "u64"
             }
           },
           {
@@ -291,6 +320,113 @@
           }
         ]
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "BondInitEvent",
+      "fields": [
+        {
+          "name": "nonce",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "initDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "controlVariable",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "decayFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "bondingSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxPayoutFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minPrice",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "BondEvent",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxPrice",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "payout",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "price",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "BondUpdateEvent",
+      "fields": [
+        {
+          "name": "bondingSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "controlVariable",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "decayFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxPayoutFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minPrice",
+          "type": "u64",
+          "index": false
+        }
+      ]
     }
   ]
 }
