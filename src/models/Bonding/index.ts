@@ -110,10 +110,10 @@ export class Bonding {
       .mul(new u64(controlVariable))
       .div(new u64(Math.pow(10, payoutTokenDecimals - 5)));
 
-    console.log('p', price.toString())
+    // console.log('p', price.toString())
 
     const p = price.lt(minPrice) ? minPrice : price;
-    console.log('Internal Bond Price', p.toString());
+    // console.log('Internal Bond Price', p.toString());
 
     return price.lt(minPrice) ? minPrice : price;
   }

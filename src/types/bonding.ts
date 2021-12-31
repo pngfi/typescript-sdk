@@ -17,6 +17,7 @@ export type BondingConfig = {
   address: PublicKey;
   payoutAsset: PublicKey;
   staking: PublicKey;
+  vestConfig: PublicKey;
 }
 
 export type BondingInfo = {

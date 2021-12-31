@@ -21,7 +21,6 @@ import {
   u64,
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token as SPLToken
 } from '@solana/spl-token';
 
 import {
