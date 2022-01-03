@@ -79,6 +79,10 @@
           "type": "u64"
         },
         {
+          "name": "rebaseRewardsAmount",
+          "type": "u64"
+        },
+        {
           "name": "rebaseSupply",
           "type": "u64"
         }
@@ -233,7 +237,7 @@
       ]
     },
     {
-      "name": "updateRebaseSupply",
+      "name": "updateRebaseConfig",
       "accounts": [
         {
           "name": "staking",
@@ -249,7 +253,15 @@
       "args": [
         {
           "name": "newRebaseSupply",
-          "type": "u64"
+          "type": {
+            "option": "u64"
+          }
+        },
+        {
+          "name": "newRewardsAmount",
+          "type": {
+            "option": "u64"
+          }
         }
       ]
     },
@@ -296,11 +308,6 @@
           "name": "tokenHolder",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "adminAuth",
-          "isMut": false,
-          "isSigner": true
         },
         {
           "name": "tokenProgram",
@@ -355,6 +362,10 @@
           },
           {
             "name": "rebaseRateDenominator",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseRewardsAmount",
             "type": "u64"
           },
           {
