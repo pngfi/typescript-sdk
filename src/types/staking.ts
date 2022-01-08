@@ -19,4 +19,6 @@ export type StakingInfo = {
   rebaseRateDenominator: number;
   rewardsHolder: PublicKey;
   rebaseSupply: u64;
+  sTokenMintSupply: u64;
+  rebaseRewardsAmount: u64;
 }

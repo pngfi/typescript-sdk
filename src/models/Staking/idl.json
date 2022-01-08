@@ -26,8 +26,13 @@
           "isSigner": false
         },
         {
-          "name": "rewardsHolder",
+          "name": "rewardsPda",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsHolder",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -63,7 +68,11 @@
       ],
       "args": [
         {
-          "name": "nonce",
+          "name": "stakingNonce",
+          "type": "u8"
+        },
+        {
+          "name": "rewardsNonce",
           "type": "u8"
         },
         {
@@ -295,7 +304,7 @@
           "isSigner": false
         },
         {
-          "name": "stakingPda",
+          "name": "rewardsPda",
           "isMut": false,
           "isSigner": false
         },
@@ -341,7 +350,11 @@
             "type": "publicKey"
           },
           {
-            "name": "nonce",
+            "name": "stakingNonce",
+            "type": "u8"
+          },
+          {
+            "name": "rewardsNonce",
             "type": "u8"
           },
           {
@@ -375,5 +388,8 @@
         ]
       }
     }
-  ]
+  ],
+  "metadata": {
+    "address": "PStakuQi71BkHTyPor8EF6ooAvNLpqc4cYGNjGpLrtY"
+  }
 }

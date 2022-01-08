@@ -89,26 +89,36 @@ export class Bonding {
     }
   }
 
+  private decay(bondingInfo: BondingInfo): u64 {
+    const { lastDecay, totalDebt, decayFactor } = bondingInfo;
+
+    const duration = Math.floor(new Date().getTime() / 1000 - lastDecay);
+    const decay = totalDebt.mul(new u64(duration)).div(new u64(decayFactor));
+
+    return decay.gt(totalDebt) ? totalDebt : decay;
+  }
+
   private valueOf(amount: u64, payoutTokenDecimals: number, depositTokenDecimals: number): u64 {
     return amount
       .mul(new u64(Math.pow(10, payoutTokenDecimals)))
       .div(new u64(Math.pow(10, depositTokenDecimals)));
   }
 
-  private debtRatio(totalDebt: u64, tokenSupply: u64, payoutTokenDecimals: number): u64 {
+  private debtRatio(totalDebt: u64, tokenSupply: u64, payoutTokenDecimals: number, bondingInfo: BondingInfo): u64 {
     return totalDebt
+      .sub(this.decay(bondingInfo))
       .mul(new u64(Math.pow(10, payoutTokenDecimals)))
       .div(tokenSupply);
   }
 
   private price(bondingInfo: BondingInfo, payoutTokenDecimals: number): u64 {
     const { totalDebt, bondingSupply, controlVariable, minPrice } = bondingInfo;
-    const debtRatio = this.debtRatio(totalDebt, bondingSupply, payoutTokenDecimals);
+    const debtRatio = this.debtRatio(totalDebt, bondingSupply, payoutTokenDecimals, bondingInfo);
 
 
     const price = debtRatio
       .mul(new u64(controlVariable))
-      .div(new u64(Math.pow(10, payoutTokenDecimals - 5)));
+      .div(new u64(Math.pow(10, payoutTokenDecimals - 3)));
 
     // console.log('p', price.toString())
 
@@ -309,7 +319,7 @@ export class Bonding {
 
   // }
 
-  async initBonding(
+  /* async initBonding(
     depositTokenMint: PublicKey,
     payoutTokenMint: PublicKey,
     bondingKP: Keypair,
@@ -382,6 +392,6 @@ export class Bonding {
       payoutHolder
     }
   }
-
+ */
 
 }

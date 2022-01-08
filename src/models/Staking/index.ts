@@ -14,7 +14,8 @@ import {
   getTokenAccountInfo,
   deriveAssociatedTokenAddress,
   resolveOrCreateAssociatedTokenAddress,
-  transferToken
+  transferToken,
+  getTokenMintInfo
 } from '../../utils';
 
 import {
@@ -41,6 +42,7 @@ const STAKING_SEED_PREFIX = 'staking_authority';
 const VESTING_SEED_PREFIX = 'vesting';
 const VESTING_SIGNER_SEED_PREFIX = 'vesting_signer';
 const VESTING_CONFIG_SIGNER_SEED_PREFIX = 'vest_config_signer';
+const REWARDS_SEED_PREFIX = "rewards_authority";
 
 export class Staking {
   public config: StakingConfig;
@@ -102,10 +104,14 @@ export class Staking {
       rebaseRateNumerator,
       rebaseRateDenominator,
       rewardsHolder,
-      rebaseSupply
+      rebaseSupply,
+      rebaseRewardsAmount
     } = await this.program.account.staking.fetch(this.config.address);
 
+    // console.log('staking', await this.program.account.staking.fetch(this.config.address))
+
     const tokenHolderInfo = await getTokenAccountInfo(this.program.provider as any, tokenHolder);
+    const stokenHolderInfo = await getTokenMintInfo(this.program.provider as any, stakeTokenMint);
 
     return {
       tokenMint,
@@ -118,7 +124,9 @@ export class Staking {
       rebaseRateNumerator: rebaseRateNumerator.toNumber(),
       rebaseRateDenominator: rebaseRateDenominator.toNumber(),
       rewardsHolder,
-      rebaseSupply
+      rebaseSupply,
+      sTokenMintSupply: stokenHolderInfo?.supply,
+      rebaseRewardsAmount
     }
   }
 
@@ -309,9 +317,9 @@ export class Staking {
 
     const owner = this.program.provider.wallet?.publicKey;
 
-    const stakedHolder = await deriveAssociatedTokenAddress(stakingPda, stakingInfo.tokenMint);
+    const tokenHolder = await deriveAssociatedTokenAddress(stakingPda, stakingInfo.tokenMint);
     const userTokenHolder = await deriveAssociatedTokenAddress(owner, stakingInfo.tokenMint);
-    const { address: userSTokenHolder, ...resolveUserSTokenAccountInstrucitons } =
+    const { address: userStakeTokenHolder, ...resolveUserSTokenAccountInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.program.provider.connection,
         owner,
@@ -323,9 +331,9 @@ export class Staking {
         staking: this.config.address,
         stakingPda,
         stakeTokenMint: stakingInfo.sTokenMint,
-        tokenHolder: stakedHolder,
+        tokenHolder,
         userTokenHolder,
-        userStakeTokenHolder: userSTokenHolder,
+        userStakeTokenHolder,
         owner,
         tokenProgram: TOKEN_PROGRAM_ID,
       },
@@ -537,7 +545,7 @@ export class Staking {
     return claimableAmount.add(DecimalUtil.toU64(newClaimableAmount));
   }
 
-  async vestStake(amount: u64): Promise<TransactionEnvelope> {
+  /* async vestStake(amount: u64): Promise<TransactionEnvelope> {
 
     const owner = this.program.provider.wallet?.publicKey;
 
@@ -608,6 +616,33 @@ export class Staking {
       [
         ...instructions.instructions
       ],
+      []
+    )
+  } */
+
+  async rebase(): Promise<TransactionEnvelope> {
+    const stakeConfigInfo = await this.getStakingInfo();
+
+    const [rewardsPda] = await PublicKey.findProgramAddress(
+      [Buffer.from(REWARDS_SEED_PREFIX), this.config.address.toBuffer()],
+      this.program.programId
+    );
+
+    const rebaseInstruction = this.program.instruction.rebase(
+      {
+        accounts: {
+          staking: this.config.address,
+          rewardsPda,
+          rewardsHolder: stakeConfigInfo.rewardsHolder,
+          tokenHolder: stakeConfigInfo.tokenHolder,
+          tokenProgram: TOKEN_PROGRAM_ID
+        }
+      }
+    )
+
+    return new TransactionEnvelope(
+      this.program.provider as any,
+      [rebaseInstruction],
       []
     )
   }

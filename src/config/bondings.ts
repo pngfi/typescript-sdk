@@ -17,8 +17,8 @@ export const devnetBondings: BondingConfig[] = [
   //   payoutAsset: new PublicKey('PNGmGQ7SwKTHHPCRgnznYbyTPkrAxcAPLqpgNDYNP1g'),
   // },
   {
-    address: new PublicKey('AL41ywrT9reDRVqmS7NSihv9Zz73h6D6T12vQj2Up93s'),
-    staking: new PublicKey('BpQ7XJHo51HcUMjCkV4LJzuMs8YgbMpNzaoudfEQr8VY'),
+    address: new PublicKey('DsXsprxo2qZMu6UJMwv3F9PBcVtG68AJh5tuAWL2sDD3'),
+    staking: new PublicKey('9RsQSNgi5GDDBC22y7KZXNdQv19fMDR3c5LigCm3gjRy'),
     vestConfig: new PublicKey('74geuqwioFsijC8j1UbrVdtr21Q5etd3Qi73ciQQ1r4e'),
     payoutAsset: new PublicKey('BUDkmty8HggNkNvVfRAUJXvSuW4kar9ZtPUG5grNttQ4'),
   },
