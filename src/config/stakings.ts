@@ -11,7 +11,7 @@ export const devnetStakings: StakingConfig[] = [
   //   payoutAsset: new PublicKey('PNGmGQ7SwKTHHPCRgnznYbyTPkrAxcAPLqpgNDYNP1g')
   // },
   {
-    address: new PublicKey('9RsQSNgi5GDDBC22y7KZXNdQv19fMDR3c5LigCm3gjRy'),
+    address: new PublicKey('J3wqkYG1qq46S8WJ6pf8FaV5f7dZdAXviSftAUgDRD26'),
     vestConfig: new PublicKey('74geuqwioFsijC8j1UbrVdtr21Q5etd3Qi73ciQQ1r4e'),
     payoutAsset: new PublicKey('BUDkmty8HggNkNvVfRAUJXvSuW4kar9ZtPUG5grNttQ4'),
   }

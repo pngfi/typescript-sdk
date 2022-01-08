@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "name": "staking",
   "instructions": [
     {
@@ -388,8 +388,5 @@
         ]
       }
     }
-  ],
-  "metadata": {
-    "address": "PStakuQi71BkHTyPor8EF6ooAvNLpqc4cYGNjGpLrtY"
-  }
+  ]
 }

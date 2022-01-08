@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "name": "bonding",
   "instructions": [
     {
@@ -428,8 +428,5 @@
         }
       ]
     }
-  ],
-  "metadata": {
-    "address": "PBondDFu4LkX2iw1ozEvdhxv5CtmY7mzLRa8t8D75di"
-  }
+  ]
 }
