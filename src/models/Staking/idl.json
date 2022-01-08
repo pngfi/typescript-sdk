@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "name": "staking",
   "instructions": [
     {
@@ -26,8 +26,13 @@
           "isSigner": false
         },
         {
-          "name": "rewardsHolder",
+          "name": "rewardsPda",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsHolder",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -63,7 +68,11 @@
       ],
       "args": [
         {
-          "name": "nonce",
+          "name": "stakingNonce",
+          "type": "u8"
+        },
+        {
+          "name": "rewardsNonce",
           "type": "u8"
         },
         {
@@ -76,6 +85,10 @@
         },
         {
           "name": "rebaseRateDenominator",
+          "type": "u64"
+        },
+        {
+          "name": "rebaseRewardsAmount",
           "type": "u64"
         },
         {
@@ -136,7 +149,7 @@
       ]
     },
     {
-      "name": "stackAll",
+      "name": "stakeAll",
       "accounts": [
         {
           "name": "staking",
@@ -233,7 +246,7 @@
       ]
     },
     {
-      "name": "updateRebaseSupply",
+      "name": "updateRebaseConfig",
       "accounts": [
         {
           "name": "staking",
@@ -249,7 +262,15 @@
       "args": [
         {
           "name": "newRebaseSupply",
-          "type": "u64"
+          "type": {
+            "option": "u64"
+          }
+        },
+        {
+          "name": "newRewardsAmount",
+          "type": {
+            "option": "u64"
+          }
         }
       ]
     },
@@ -283,7 +304,7 @@
           "isSigner": false
         },
         {
-          "name": "stakingPda",
+          "name": "rewardsPda",
           "isMut": false,
           "isSigner": false
         },
@@ -296,11 +317,6 @@
           "name": "tokenHolder",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "adminAuth",
-          "isMut": false,
-          "isSigner": true
         },
         {
           "name": "tokenProgram",
@@ -334,7 +350,11 @@
             "type": "publicKey"
           },
           {
-            "name": "nonce",
+            "name": "stakingNonce",
+            "type": "u8"
+          },
+          {
+            "name": "rewardsNonce",
             "type": "u8"
           },
           {
@@ -355,6 +375,10 @@
           },
           {
             "name": "rebaseRateDenominator",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseRewardsAmount",
             "type": "u64"
           },
           {

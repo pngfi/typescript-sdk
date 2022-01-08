@@ -6,14 +6,14 @@ import {
   AccountLayout,
   AccountInfo as TokenAccountInfo,
   u64,
-  Token as SPLToken, 
+  Token as SPLToken,
   TOKEN_PROGRAM_ID,
   MintInfo
 } from '@solana/spl-token';
 
-import { 
-  PublicKey, 
-  Keypair, 
+import {
+  PublicKey,
+  Keypair,
   Signer,
   SystemProgram
 } from '@solana/web3.js';
@@ -115,8 +115,8 @@ export const getTokenMintInfo = async (
   tokenMint: PublicKey
 ): Promise<MintInfo> => {
   const token = new SPLToken(
-    provider.connection, 
-    tokenMint, 
+    provider.connection,
+    tokenMint,
     TOKEN_PROGRAM_ID, {} as any
   );
 
@@ -191,7 +191,31 @@ export async function createTokenMint(
       null
     ),
   ];
-  
+
+  return {
+    instructions,
+    signers: [],
+    cleanupInstructions: []
+  }
+}
+
+export async function transferToken(
+  source: PublicKey,
+  destination: PublicKey,
+  amount: u64,
+  payer: PublicKey
+): Promise<Instruction> {
+  const instructions = [
+    SPLToken.createTransferInstruction(
+      TOKEN_PROGRAM_ID,
+      source,
+      destination,
+      payer,
+      [],
+      amount
+    )
+  ];
+
   return {
     instructions,
     signers: [],
