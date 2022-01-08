@@ -12,6 +12,11 @@ export const mainnetPools: PoolConfig[] = [
   //   addr: new PublicKey('24ZbKS36rkPv14Tdx8qv4NRyqatTaJ5KgJrT1LxBKn5d')
   // },
   {
+    pair: 'BUD_PAI',
+    addr: new PublicKey('DmasgkkrJU58rQ6hWZRVRcXSqcshbynEQbZ6yXe9T24v'),
+    public: false
+  },
+  {
     pair: 'weWETH_PAI',
     addr: new PublicKey('VG7NmfRs1tbhM6CZQYWq7kkLdXn4A9JEiWzi9XrR39Y')
   },
@@ -34,14 +39,6 @@ export const mainnetPools: PoolConfig[] = [
 ];
 
 export const devnetPools: PoolConfig[] = [
-  // {
-  //   pair: 'SOL_USDC',
-  //   addr: new PublicKey('6VznpsWwaJjDiWF7A6xZosKHb8AbtG29wrJbK5ysHRfg')
-  // },
-  // {
-  //   pair: 'PNG_USDC',
-  //   addr: new PublicKey('3HdXX7jhbq7EF2fpaB7iPt8J8N5MwTYii6FYhwySakg7')
-  // }
   {
     pair: 'PNG_USDC',
     addr: new PublicKey('5WAEa7YXfxajtZMDnBULXgGXtiNkmeNfasTri7xiH4k8')

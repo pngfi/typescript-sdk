@@ -28,6 +28,7 @@ export type PoolInfo = {
 export type PoolConfig = {
   pair: string;
   addr: PublicKey;
+  public?: boolean;
 }
 
 export type PoolRecords = Record<string, PoolInfo>;
