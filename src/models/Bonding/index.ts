@@ -98,12 +98,9 @@ export class Bonding {
     const { totalDebt, bondingSupply, controlVariable, minPrice } = bondingInfo;
     const debtRatio = this.debtRatio(totalDebt, bondingSupply, payoutTokenDecimals, bondingInfo);
 
-
     const price = debtRatio
       .mul(new u64(controlVariable))
       .div(new u64(Math.pow(10, payoutTokenDecimals - 3)));
-
-    const p = price.lt(minPrice) ? minPrice : price;
 
     return price.lt(minPrice) ? minPrice : price;
   }
@@ -122,7 +119,6 @@ export class Bonding {
     );
 
     const price = this.price(bondingInfo, payoutTokenDecimals);
-
     const payout = valuation.mul(new u64(Math.pow(10, 5))).div(price);
 
     return {
