@@ -3,7 +3,7 @@ import { BondingConfig } from '../types';
 
 export const mainnetBondings: BondingConfig[] = [
   {
-    address: new PublicKey('FRxZ74gHtGdU32AYx7UHP5BAEfGPVTqV4BKjri2v618U'),
+    address: new PublicKey('6fDbbhGpWLSUVb75o7npL2G17JqdXhX1uRNBsH5xmnUM'),
     staking: new PublicKey('FiiHMy7ym4iDc8Cor26WqzwWdSPWNgfc3isa2WPCjs7k'),
     payoutAsset: new PublicKey('BUD1144GGYwmMRFs4Whjfkom5UHqC9a8dZHPVvR2vfPx'),
     vestConfig: new PublicKey('CxHKqMnY8bf8NsmhfC4AbwYy9Hg1rCYHmRdbgBwnojs3'),
