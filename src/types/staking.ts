@@ -22,3 +22,10 @@ export type StakingInfo = {
   sTokenMintSupply: u64;
   rebaseRewardsAmount: u64;
 }
+
+export type UserVestingInfo = {
+  lastUpdatedTime: u64,
+  lastVestTime: u64,
+  claimableAmount: u64,
+  vestedHolderAmount: u64
+}
