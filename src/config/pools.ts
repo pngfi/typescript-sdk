@@ -12,6 +12,15 @@ export const pools: PoolConfig[] = [
   //   addr: new PublicKey('24ZbKS36rkPv14Tdx8qv4NRyqatTaJ5KgJrT1LxBKn5d')
   // },
   {
+    pair: 'C98_PAI',
+    addr: new PublicKey('CV6qz7bgVgKTtm7znPTTjVSMo7ukkahkw7zLKWyVg6MM')
+  },
+  {
+    pair: 'BUD_PAI',
+    addr: new PublicKey('DmasgkkrJU58rQ6hWZRVRcXSqcshbynEQbZ6yXe9T24v'),
+    public: false
+  },
+  {
     pair: 'weWETH_PAI',
     addr: new PublicKey('VG7NmfRs1tbhM6CZQYWq7kkLdXn4A9JEiWzi9XrR39Y')
   },
