@@ -9,8 +9,6 @@ import {
   DecimalUtil,
   deriveAssociatedTokenAddress,
   resolveOrCreateAssociatedTokenAddress,
-  ZERO_U64,
-  getTokenAccountInfo
 } from '../../utils';
 
 import { PublicKey } from '@solana/web3.js';
@@ -27,14 +25,16 @@ const BONDING_SEED_PREFIX = 'bonding_authority';
 
 export class Bonding {
   public config: BondingConfig;
+  public bondingInfo: BondingInfo;
   private program: Program;
 
-  constructor(provider: Provider, config: BondingConfig) {
+  constructor(provider: Provider, config: BondingConfig, bondingInfo: BondingInfo) {
     this.config = config;
+    this.bondingInfo = bondingInfo;
     this.program = new Program(idl as Idl, PNG_BONDING_ID, provider as any);
   }
 
-  async getBondingInfo(): Promise<BondingInfo> {
+  /* async getBondingInfo(): Promise<BondingInfo> {
     const {
       payoutHolder,
       payoutTokenMint,
@@ -70,7 +70,7 @@ export class Bonding {
       decayFactor: decayFactor.toNumber(),
       lastDecay: lastDecay.toNumber()
     }
-  }
+  } */
 
   private decay(bondingInfo: BondingInfo): u64 {
     const { lastDecay, totalDebt, decayFactor } = bondingInfo;
@@ -131,20 +131,20 @@ export class Bonding {
   async bond(amount: u64): Promise<TransactionEnvelope> {
 
     const owner = this.program.provider.wallet?.publicKey;
-    const bondingInfo = await this.getBondingInfo();
+    // const bondingInfo = await this.getBondingInfo();
 
     const [bondingPda] = await PublicKey.findProgramAddress(
       [Buffer.from(BONDING_SEED_PREFIX), this.config.address.toBuffer()],
       this.program.programId
     );
 
-    const userDepositHolder = await deriveAssociatedTokenAddress(owner, bondingInfo.depositTokenMint);
+    const userDepositHolder = await deriveAssociatedTokenAddress(owner, this.bondingInfo.depositTokenMint);
 
     const { address: userPayoutHolder, ...resolveUserPayoutHolderInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.program.provider.connection,
         owner,
-        bondingInfo.payoutTokenMint,
+        this.bondingInfo.payoutTokenMint,
         amount
       );
 
@@ -155,10 +155,10 @@ export class Bonding {
         accounts: {
           bonding: this.config.address,
           bondingPda,
-          depositTokenMint: bondingInfo.depositTokenMint,
-          depositHolder: bondingInfo.depositHolder,
-          payoutHolder: bondingInfo.payoutHolder,
-          payoutTokenMint: bondingInfo.payoutTokenMint,
+          depositTokenMint: this.bondingInfo.depositTokenMint,
+          depositHolder: this.bondingInfo.depositHolder,
+          payoutHolder: this.bondingInfo.payoutHolder,
+          payoutTokenMint: this.bondingInfo.payoutTokenMint,
           userDepositHolder,
           userPayoutHolder,
           owner,

@@ -4,28 +4,41 @@ import { PublicKey } from '@solana/web3.js';
 export type StakingConfig = {
   address: PublicKey;
   vestConfig: PublicKey;
-  payoutAsset: PublicKey;
 }
 
 export type StakingInfo = {
+  pubkey: PublicKey;
   tokenMint: PublicKey;
   sTokenMint: PublicKey;
   tokenHolder: PublicKey;
-  payoutTokenMint: PublicKey;
+  payoutTokenMint: PublicKey;   //TODO
   tokenHolderAmount: u64;
-  rebaseEpochDuration: number;
-  rebaseLastTime: number;
-  rebaseRateNumerator: number;
-  rebaseRateDenominator: number;
-  rewardsHolder: PublicKey;
-  rebaseSupply: u64;
-  sTokenMintSupply: u64;
-  rebaseRewardsAmount: u64;
+  rebaseEpochDuration: number,
+  rebaseLastTime: number,
+  rebaseRateNumerator: number,
+  rebaseRateDenominator: number,
+  rewardsHolder: PublicKey,
+  rebaseSupply: u64,
+  sTokenMintSupply: u64,
+  rebaseRewardsAmount: u64,
+  vestConfigInfo: {
+    pubkey: PublicKey,
+    vestMint: PublicKey;
+    claimAllDuration: number;
+    halfLifeDuration: number;
+    claimableHolder: PublicKey;
+    claimableMint: PublicKey;
+  }
 }
 
 export type UserVestingInfo = {
+  pubkey: PublicKey,
+  claimableAmount: u64,
   lastUpdatedTime: u64,
   lastVestTime: u64,
-  claimableAmount: u64,
-  vestedHolderAmount: u64
+  // nonce
+  owner: PublicKey,
+  vestConfig: PublicKey,
+  vestedHolder: PublicKey,
+  vestedHolderAmount: u64,
 }
