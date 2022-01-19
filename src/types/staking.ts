@@ -18,6 +18,8 @@ export type StakingInfo = {
   rebaseRateNumerator: number,
   rebaseRateDenominator: number,
   rewardsHolder: PublicKey,
+  apy: number,
+  rewardsPerDay: string,
   rebaseSupply: u64,
   sTokenMintSupply: u64,
   rebaseRewardsAmount: u64,
