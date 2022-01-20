@@ -1,21 +1,14 @@
 import type { Provider } from '@saberhq/solana-contrib';
 
-import {
-  StakingInfo,
-  StakingConfig,
-  VestConfigInfo
-} from '../../types';
+import { StakingConfig } from '../../types';
 
 import {
   DecimalUtil,
   ZERO_U64,
   PNG_STAKING_ID,
   PNG_VESTING_ID,
-  getTokenAccountInfo,
   deriveAssociatedTokenAddress,
   resolveOrCreateAssociatedTokenAddress,
-  transferToken,
-  getTokenMintInfo
 } from '../../utils';
 
 import {
@@ -39,6 +32,7 @@ import { TransactionEnvelope } from '@saberhq/solana-contrib';
 
 const STAKING_SEED_PREFIX = 'staking_authority';
 
+const VESTING_SEED_PREFIX = 'vesting';
 const VESTING_SIGNER_SEED_PREFIX = 'vesting_signer';
 const VESTING_CONFIG_SIGNER_SEED_PREFIX = 'vest_config_signer';
 const REWARDS_SEED_PREFIX = "rewards_authority";
@@ -111,7 +105,11 @@ export class Staking {
     const instructions = [];
 
     const vestConfigInfo = this.stakingInfo.vestConfigInfo;
-    const userVestingAddress = userVestingInfo.pubkey;
+    
+    const [userVestingAddress] = userVestingInfo ? [new PublicKey(userVestingInfo.pubkey)] : await PublicKey.findProgramAddress(
+      [Buffer.from(VESTING_SEED_PREFIX), new PublicKey(this.config.vestConfig).toBuffer(), new PublicKey(owner).toBuffer()],
+      new PublicKey(this.vestingProgram.programId)
+    );
 
     const [vSigner, vNonce] = await PublicKey.findProgramAddress(
       [Buffer.from(VESTING_SIGNER_SEED_PREFIX), userVestingAddress.toBuffer()],
@@ -124,7 +122,7 @@ export class Staking {
     ]);
 
     // if user not have vesting, init it.
-    if (userVestingInfo === null) {
+    if (!!!userVestingInfo) {
       instructions.push(
         this.vestingProgram.instruction.initVesting(
           new u64(vNonce),
@@ -369,11 +367,6 @@ export class Staking {
     const vestConfigInfo = this.stakingInfo.vestConfigInfo;
     const userVestingAddress = userVestingInfo.pubkey;
 
-    // const [vestingAddr, vestConfigInfo] = await Promise.all([
-    //   this.getUserVestingAddress(),
-    //   this.getVestConfigInfo()
-    // ]);
-
     const [vcSigner] = await PublicKey.findProgramAddress(
       [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
       this.vestingProgram.programId
@@ -433,7 +426,7 @@ export class Staking {
       [
         ...resolveUserTokenAccountInstrucitons.signers
       ]
-    )
+    );
   }
 
   static estimatedVestingClaimable(
@@ -469,81 +462,6 @@ export class Staking {
     return claimableAmount.add(DecimalUtil.toU64(newClaimableAmount));
   }
 
-  /* async vestStake(amount: u64): Promise<TransactionEnvelope> {
-
-    const owner = this.program.provider.wallet?.publicKey;
-
-    const vestConfig = await this.getVestConfigInfo();
-
-    const [vestingPda, nonce] = await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_CONFIG_SIGNER_SEED_PREFIX), this.config.vestConfig.toBuffer()],
-      this.vestingProgram.programId
-    );
-
-    const userClaimableHolder = await deriveAssociatedTokenAddress(
-      owner,
-      vestConfig.claimableMint
-    );
-    const userVestHolder = await deriveAssociatedTokenAddress(
-      owner,
-      vestConfig.vestMint
-    );
-
-    const vestStakeInstruction = this.vestingProgram.instruction.stake(
-      amount,
-      {
-        accounts: {
-          vestConfig: this.config.vestConfig,
-          vestConfigSigner: vestingPda,
-          vestMint: vestConfig?.vestMint,
-
-          claimableHolder: vestConfig?.claimableHolder,
-          userClaimableHolder: userClaimableHolder,
-          userVestHolder: userVestHolder,
-
-          owner,
-          tokenProgram: TOKEN_PROGRAM_ID
-        }
-      }
-    )
-
-    return new TransactionEnvelope(
-      this.vestingProgram.provider as any,
-      [
-        vestStakeInstruction
-      ],
-      []
-    )
-  }
-
-  async transferToken(
-    tokenMint: PublicKey,
-    destination: PublicKey,
-    amount: u64,
-  ): Promise<TransactionEnvelope> {
-    const payer = this.program.provider.wallet?.publicKey;
-
-    const source = await deriveAssociatedTokenAddress(
-      payer,
-      tokenMint
-    );
-
-    const instructions = await transferToken(
-      source,
-      destination,
-      amount,
-      payer
-    );
-
-    return new TransactionEnvelope(
-      this.vestingProgram.provider as any,
-      [
-        ...instructions.instructions
-      ],
-      []
-    )
-  } */
-
   async rebase(): Promise<TransactionEnvelope> {
 
     const [rewardsPda] = await PublicKey.findProgramAddress(
@@ -561,13 +479,13 @@ export class Staking {
           tokenProgram: TOKEN_PROGRAM_ID
         }
       }
-    )
+    );
 
     return new TransactionEnvelope(
       this.program.provider as any,
       [rebaseInstruction],
       []
-    )
+    );
   }
 
 }
