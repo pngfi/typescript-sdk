@@ -107,7 +107,7 @@ export class Staking {
     const vestConfigInfo = this.stakingInfo.vestConfigInfo;
     
     const [userVestingAddress] = userVestingInfo ? [new PublicKey(userVestingInfo.pubkey)] : await PublicKey.findProgramAddress(
-      [Buffer.from(VESTING_SEED_PREFIX), new PublicKey(this.config.vestConfig).toBuffer(), new PublicKey(owner).toBuffer()],
+      [Buffer.from(VESTING_SEED_PREFIX), new PublicKey(this.config.vestConfig).toBuffer(), owner.toBuffer()],
       new PublicKey(this.vestingProgram.programId)
     );
 
@@ -332,11 +332,17 @@ export class Staking {
 
     const owner = this.program.provider.wallet?.publicKey;
 
-    const [stakedHolder, userTokenHolder, userSTokenHolder] = await Promise.all([
+    const [stakedHolder, userSTokenHolder] = await Promise.all([
       deriveAssociatedTokenAddress(stakingPda, this.stakingInfo.tokenMint),
-      deriveAssociatedTokenAddress(owner, this.stakingInfo.tokenMint),
       deriveAssociatedTokenAddress(owner, this.stakingInfo.sTokenMint)
     ]);
+
+    const { address: userTokenHolder, ...resolveUserTokenAccountInstrucitons } =
+      await resolveOrCreateAssociatedTokenAddress(
+        this.program.provider.connection,
+        owner,
+        this.stakingInfo.tokenMint
+      );
 
     const unstakeInstruction = this.program.instruction.unstake(amount, {
       accounts: {
@@ -354,9 +360,12 @@ export class Staking {
     return new TransactionEnvelope(
       this.program.provider as any,
       [
+        ...resolveUserTokenAccountInstrucitons.instructions,
         unstakeInstruction
       ],
-      []
+      [
+        ...resolveUserTokenAccountInstrucitons.signers,
+      ]
     );
   }
 
