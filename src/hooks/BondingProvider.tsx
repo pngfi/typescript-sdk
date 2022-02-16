@@ -1,9 +1,8 @@
 import React, { useState, createContext, useContext, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { BondingFormat } from './BondingFormat';
 import axios from 'axios';
 import { PublicKey } from '@solana/web3.js';
-import { DecimalUtil } from '../utils';
+import { DecimalUtil, BondingFormat } from '../utils';
 import { Bonding, Staking } from '../models';
 import { u64 } from '@solana/spl-token';
 import type { Provider } from "@saberhq/solana-contrib";

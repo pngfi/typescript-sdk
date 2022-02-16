@@ -6,3 +6,4 @@ export * from './common';
 export * from './transactionBuilder';
 export * from './pool'
 export * from './quoteBuilder';
+export * from './BondingFormat';
