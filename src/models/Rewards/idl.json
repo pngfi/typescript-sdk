@@ -72,11 +72,6 @@
           "name": "distributor",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
         }
       ],
       "args": [
@@ -125,7 +120,7 @@
         {
           "name": "claimant",
           "isMut": false,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "payer",
@@ -147,10 +142,6 @@
         {
           "name": "bump",
           "type": "u8"
-        },
-        {
-          "name": "rootVersion",
-          "type": "u64"
         },
         {
           "name": "index",
@@ -190,11 +181,6 @@
           "name": "distributor",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
         }
       ],
       "args": []
@@ -226,10 +212,6 @@
                 32
               ]
             }
-          },
-          {
-            "name": "rootVersion",
-            "type": "u64"
           },
           {
             "name": "mint",
@@ -279,6 +261,16 @@
     {
       "name": "ClaimedEvent",
       "fields": [
+        {
+          "name": "root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          },
+          "index": false
+        },
         {
           "name": "index",
           "type": "u64",
@@ -337,11 +329,6 @@
       "code": 6007,
       "name": "NoClaimableAmount",
       "msg": "no claimable amount"
-    },
-    {
-      "code": 6008,
-      "name": "RootVersionMismatch",
-      "msg": "Root version mismatch"
     }
   ],
   "metadata": {

@@ -1,15 +1,13 @@
+import { PublicKey, SystemProgram } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { BN, Idl, Program, Provider } from '@project-serum/anchor';
+import { TransactionEnvelope } from '@saberhq/solana-contrib';
+import idl from './idl.json';
 import {
+    BUD_REWARD_ID,
     deriveAssociatedTokenAddress,
     resolveOrCreateAssociatedTokenAddress,
 } from '../../utils';
-import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import idl from './idl.json';
-
-import { BN, Idl, Program, Provider } from '@project-serum/anchor';
-import { TransactionEnvelope } from '@saberhq/solana-contrib';
-
-const REWARDS_PROGRAM_ID = new PublicKey('PMRKTWvK9f1cPkQuXvvyDPmyCSoq8FdedCimXrXJp8M');
 
 export class Rewards {
     public rewardsInfo: any;
@@ -17,15 +15,38 @@ export class Rewards {
 
     constructor(provider: Provider, rewardsInfo: any) {
         this.rewardsInfo = rewardsInfo;
-        this.program = new Program(idl as Idl, REWARDS_PROGRAM_ID, provider as any);
+        this.program = new Program(idl as Idl, BUD_REWARD_ID, provider as any);
+    }
+
+    async getClaimStatusInfo() {
+        const { distributor } = this.rewardsInfo;
+        const owner = this.program.provider.wallet?.publicKey;
+
+        let [claimStatus, _] = await PublicKey.findProgramAddress(
+            [Buffer.from("ClaimStatus"), new PublicKey(distributor).toBuffer(), owner.toBuffer()],
+            this.program.programId
+        );
+        let claimStatusAcc;
+
+        try {
+            claimStatusAcc = await this.program.account.claimStatus.fetch(claimStatus);
+        } catch (error) {
+            console.log(error);
+        }
+        return claimStatusAcc;
     }
 
     async claim(): Promise<TransactionEnvelope> {
-        const { distributor, amount, index, proof, rootVersion } = this.rewardsInfo;
+        const { distributor, amount, index, proof, root } = this.rewardsInfo;
+        console.log(this.rewardsInfo);
 
         const owner = this.program.provider.wallet?.publicKey;
 
         const distributorAcc = await this.program.account.merkleDistributor.fetch(new PublicKey(distributor));
+        console.log('distributorAcc:', distributorAcc);
+        // const rootStr = distributorAcc.root.reduce((str: any, byte: any) => str + byte.toString(16).padStart(2, '0'), '');
+        // console.log('rootStr', rootStr);
+        // if(rootStr !== root){}
 
         let [claimStatus, claimNonce] = await PublicKey.findProgramAddress(
             [Buffer.from("ClaimStatus"), new PublicKey(distributor).toBuffer(), owner.toBuffer()],
@@ -37,12 +58,11 @@ export class Rewards {
             await resolveOrCreateAssociatedTokenAddress(
                 this.program.provider.connection,
                 owner,
-                distributorAcc.mint,
+                distributorAcc.mint
             );
 
         const rewardsInstruction = this.program.instruction.claim(
             new BN(claimNonce),
-            new BN(rootVersion),
             new BN(index),
             new BN(amount),
             proof.map((p: any) => Buffer.from(p, "hex")),
@@ -55,7 +75,7 @@ export class Rewards {
                     claimant: owner,
                     payer: owner,
                     systemProgram: SystemProgram.programId,
-                    tokenProgram: TOKEN_PROGRAM_ID,
+                    tokenProgram: TOKEN_PROGRAM_ID
                 },
             }
         );
