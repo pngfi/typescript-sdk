@@ -38,15 +38,10 @@ export class Rewards {
 
     async claim(): Promise<TransactionEnvelope> {
         const { distributor, amount, index, proof, root } = this.rewardsInfo;
-        console.log(this.rewardsInfo);
 
         const owner = this.program.provider.wallet?.publicKey;
 
         const distributorAcc = await this.program.account.merkleDistributor.fetch(new PublicKey(distributor));
-        console.log('distributorAcc:', distributorAcc);
-        // const rootStr = distributorAcc.root.reduce((str: any, byte: any) => str + byte.toString(16).padStart(2, '0'), '');
-        // console.log('rootStr', rootStr);
-        // if(rootStr !== root){}
 
         let [claimStatus, claimNonce] = await PublicKey.findProgramAddress(
             [Buffer.from("ClaimStatus"), new PublicKey(distributor).toBuffer(), owner.toBuffer()],
