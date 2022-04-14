@@ -98,14 +98,12 @@ export class Staking {
     );
   }
 
-  async vestAll(userVestingInfo: any): Promise<TransactionEnvelope> {
+  async vestAll(userVestingInfo: any, vestMint: PublicKey): Promise<TransactionEnvelope> {
 
     const owner = this.program.provider.wallet?.publicKey;
 
     const instructions = [];
 
-    const vestConfigInfo = this.stakingInfo.vestConfigInfo;
-    
     const [userVestingAddress] = userVestingInfo ? [new PublicKey(userVestingInfo.pubkey)] : await PublicKey.findProgramAddress(
       [Buffer.from(VESTING_SEED_PREFIX), new PublicKey(this.config.vestConfig).toBuffer(), owner.toBuffer()],
       new PublicKey(this.vestingProgram.programId)
@@ -117,8 +115,8 @@ export class Staking {
     );
 
     const [vestedHolder, userVestHolder] = await Promise.all([
-      deriveAssociatedTokenAddress(vSigner, vestConfigInfo.vestMint),
-      deriveAssociatedTokenAddress(owner, vestConfigInfo.vestMint)
+      deriveAssociatedTokenAddress(vSigner, vestMint),
+      deriveAssociatedTokenAddress(owner, vestMint)
     ]);
 
     // if user not have vesting, init it.
@@ -130,7 +128,7 @@ export class Staking {
             accounts: {
               vestConfig: this.config.vestConfig,
               vesting: userVestingAddress,
-              vestMint: vestConfigInfo.vestMint,
+              vestMint,
               vestedHolder,
               vestingSigner: vSigner,
               payer: owner,
@@ -152,7 +150,7 @@ export class Staking {
           vestConfig: this.config.vestConfig,
           vesting: userVestingAddress,
           vestedHolder,
-          vestMint: vestConfigInfo.vestMint,
+          vestMint,
           vestingSigner: vSigner,
           owner,
           clock: SYSVAR_CLOCK_PUBKEY,
@@ -369,11 +367,9 @@ export class Staking {
     );
   }
 
-  async claimVestedToken(tokenMint: PublicKey, userVestingInfo: any): Promise<TransactionEnvelope> {
+  async claimVestedToken(payoutTokenMint: PublicKey, vTokenMint: PublicKey, userVestingInfo: any): Promise<TransactionEnvelope> {
 
     const owner = this.program.provider.wallet?.publicKey;
-
-    const vestConfigInfo = this.stakingInfo.vestConfigInfo;
     const userVestingAddress = userVestingInfo.pubkey;
 
     const [vcSigner] = await PublicKey.findProgramAddress(
@@ -387,15 +383,15 @@ export class Staking {
     );
 
     const [claimableHolder, vestedHolder] = await Promise.all([
-      deriveAssociatedTokenAddress(vcSigner, tokenMint),
-      deriveAssociatedTokenAddress(vSigner, vestConfigInfo.vestMint)
+      deriveAssociatedTokenAddress(vcSigner, payoutTokenMint),
+      deriveAssociatedTokenAddress(vSigner, vTokenMint)
     ]);
 
     const { address: userTokenHolder, ...resolveUserTokenAccountInstrucitons } =
       await resolveOrCreateAssociatedTokenAddress(
         this.vestingProgram.provider.connection,
         owner,
-        tokenMint
+        payoutTokenMint
       );
 
     const updateInstruction = this.vestingProgram.instruction.update({
@@ -403,7 +399,7 @@ export class Staking {
         vestConfig: this.config.vestConfig,
         vesting: userVestingAddress,
         vestedHolder,
-        vestMint: vestConfigInfo.vestMint,
+        vestMint: vTokenMint,
         vestingSigner: vSigner,
         owner,
         clock: SYSVAR_CLOCK_PUBKEY,
