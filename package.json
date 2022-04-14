@@ -1,6 +1,6 @@
 {
   "name": "@pngfi/sdk",
-  "version": "0.9.3",
+  "version": "0.9.5",
   "description": "Typescript SDK for Penguin Finance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
