@@ -4,14 +4,16 @@ import type { Provider } from '@saberhq/solana-contrib';
 
 import {
   AccountLayout,
+  AccountInfo as TokenAccountInfo,
   u64,
-  Token as SPLToken, 
-  TOKEN_PROGRAM_ID
+  Token as SPLToken,
+  TOKEN_PROGRAM_ID,
+  MintInfo
 } from '@solana/spl-token';
 
-import { 
-  PublicKey, 
-  Keypair, 
+import {
+  PublicKey,
+  Keypair,
   Signer,
   SystemProgram
 } from '@solana/web3.js';
@@ -21,7 +23,7 @@ import { Instruction } from '../types';
 /**
  * Layout with decode/encode types.
  */
- export type TypedLayout<T> = Omit<Layout, 'decode' | 'encode'> & {
+export type TypedLayout<T> = Omit<Layout, 'decode' | 'encode'> & {
   decode: (data: Buffer) => T;
   encode: (data: T, out: Buffer) => number;
 };
@@ -31,7 +33,7 @@ export type ResolvedTokenAccountInstruction = { address: PublicKey } & Instructi
 /**
  * Layout for a TokenAccount.
  */
- export const TokenAccountLayout = AccountLayout as TypedLayout<{
+export const TokenAccountLayout = AccountLayout as TypedLayout<{
   mint: Buffer;
   owner: Buffer;
   amount: Buffer;
@@ -98,6 +100,27 @@ export const deserializeAccount = (
     isNative,
     closeAuthority,
   };
+}
+
+export const getTokenAccountInfo = async (
+  provider: Provider,
+  tokenAccount: PublicKey
+): Promise<Omit<TokenAccountInfo, "address"> | null> => {
+  const assetHolderInfo = await provider.connection.getAccountInfo(tokenAccount);
+  return assetHolderInfo ? deserializeAccount(assetHolderInfo.data) : null;
+}
+
+export const getTokenMintInfo = async (
+  provider: Provider,
+  tokenMint: PublicKey
+): Promise<MintInfo> => {
+  const token = new SPLToken(
+    provider.connection,
+    tokenMint,
+    TOKEN_PROGRAM_ID, {} as any
+  );
+
+  return token.getMintInfo();
 }
 
 export const createTokenAccount = async ({
@@ -168,7 +191,31 @@ export async function createTokenMint(
       null
     ),
   ];
-  
+
+  return {
+    instructions,
+    signers: [],
+    cleanupInstructions: []
+  }
+}
+
+export async function transferToken(
+  source: PublicKey,
+  destination: PublicKey,
+  amount: u64,
+  payer: PublicKey
+): Promise<Instruction> {
+  const instructions = [
+    SPLToken.createTransferInstruction(
+      TOKEN_PROGRAM_ID,
+      source,
+      destination,
+      payer,
+      [],
+      amount
+    )
+  ];
+
   return {
     instructions,
     signers: [],
