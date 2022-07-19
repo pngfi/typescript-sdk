@@ -13,7 +13,7 @@
     "prepare": "yarn build",
     "prepublishOnly": "tsc -p src",
     "c": "git add . && git-cz",
-    "r": "standard-version && git push origin HEAD",
+    "r": "nucm use pngfi-fu && standard-version && git push origin HEAD",
     "test": "jest"
   },
   "files": [
