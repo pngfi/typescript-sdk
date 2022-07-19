@@ -1,10 +1,6 @@
 {
   "name": "@pngfi/sdk",
-<<<<<<< HEAD
-  "version": "0.8.4",
-=======
   "version": "0.9.3",
->>>>>>> 2aa0921084dff889c9e855d7639be7b2b76dcdd8
   "description": "Typescript SDK for Penguin Finance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,11 +12,23 @@
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "prepare": "yarn build",
     "prepublishOnly": "tsc -p src",
+    "c": "git add . && git-cz",
+    "r": "standard-version && git push origin HEAD",
     "test": "jest"
   },
   "files": [
     "/dist"
   ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pngfi/typescript-sdk.git"
@@ -50,6 +58,11 @@
     "decimal.js": "^10.3.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^16.2.3",
+    "@commitlint/config-conventional": "^16.2.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "standard-version": "^9.3.2",
+    "git-cz": "^4.8.0",
     "@types/bn.js": "^4.11.6",
     "@types/decimal.js": "^7.4.0",
     "@types/jest": "^26.0.24",
