@@ -1,0 +1,392 @@
+{
+  "version": "0.1.0",
+  "name": "staking",
+  "instructions": [
+    {
+      "name": "initStaking",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "stakingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "stakingNonce",
+          "type": "u8"
+        },
+        {
+          "name": "rewardsNonce",
+          "type": "u8"
+        },
+        {
+          "name": "rebaseEpochDuration",
+          "type": "u64"
+        },
+        {
+          "name": "rebaseRateNumerator",
+          "type": "u64"
+        },
+        {
+          "name": "rebaseRateDenominator",
+          "type": "u64"
+        },
+        {
+          "name": "rebaseRewardsAmount",
+          "type": "u64"
+        },
+        {
+          "name": "rebaseSupply",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStakeTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "stakeAll",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStakeTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unstake",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakeTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userStakeTokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "stakeTokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateRebaseConfig",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newRebaseSupply",
+          "type": {
+            "option": "u64"
+          }
+        },
+        {
+          "name": "newRewardsAmount",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "transferAdminAuth",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newAdminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "rebase",
+      "accounts": [
+        {
+          "name": "staking",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardsHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Staking",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "stakeTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardsHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "stakingNonce",
+            "type": "u8"
+          },
+          {
+            "name": "rewardsNonce",
+            "type": "u8"
+          },
+          {
+            "name": "adminAuth",
+            "type": "publicKey"
+          },
+          {
+            "name": "rebaseLastTime",
+            "type": "i64"
+          },
+          {
+            "name": "rebaseEpochDuration",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseRateNumerator",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseRateDenominator",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseRewardsAmount",
+            "type": "u64"
+          },
+          {
+            "name": "rebaseSupply",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

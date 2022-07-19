@@ -10,8 +10,7 @@ import {
   ZERO_DECIMAL,
 } from '.';
 
-import type { PoolInfo, Token, FeeStructure } from '../types';
-import Decimal from 'decimal.js';
+import type { PoolInfo, Token } from '../types';
 import { Token as SPLToken, TOKEN_PROGRAM_ID, u64 } from '@solana/spl-token';
 import { TokenSwapLayout, Numberu64 } from '@solana/spl-token-swap';
 
@@ -53,7 +52,8 @@ const emptyPool = {
 
 export async function getPoolInfo(
   connection: Connection,
-  poolAddr: PublicKey
+  poolAddr: PublicKey,
+  tokens: Token[]
 ): Promise<PoolInfo> {
 
   const poolAccountInfo = await connection.getAccountInfo(poolAddr);
@@ -109,14 +109,14 @@ export async function getPoolInfo(
     connection.getAccountInfo(tokenAccountB),
   ]);
 
-  const tokens = accountInfos.map((info) =>
+  const [tokenAccountAInfo, tokenAccountBInfo] = accountInfos.map((info) =>
     info ? deserializeAccount(info.data) : null
   );
 
   const lpSupplyInfo = await connection.getTokenSupply(poolMint);
 
-  const tokenA = getTokenByMint(mintA.toString());
-  const tokenB = getTokenByMint(mintB.toString());
+  const tokenA = getTokenByMint(mintA.toString(), tokens);
+  const tokenB = getTokenByMint(mintB.toString(), tokens);
 
   return {
     address: poolAddr,
@@ -132,12 +132,12 @@ export async function getPoolInfo(
     tokenA: {
       ...(tokenA || emptyToken),
       addr: tokenAccountA,
-      amount: tokens[0] ? new u64(tokens[0].amount) : ZERO_U64
+      amount: tokenAccountAInfo ? new u64(tokenAccountAInfo.amount) : ZERO_U64
     },
     tokenB: {
       ...(tokenB || emptyToken),
       addr: tokenAccountB,
-      amount: tokens[1] ? new u64(tokens[1].amount) : ZERO_U64
+      amount: tokenAccountBInfo ? new u64(tokenAccountBInfo.amount) : ZERO_U64
     },
     curveType,
     feeStructure: {
@@ -178,6 +178,45 @@ export function computeLPPrice(pool: PoolInfo, prices: Record<string, number>): 
 
   const totalValue = inputTokenCount * priceA + outputTokenCount * priceB;
   return totalValue / lpSupply.toNumber();
+
+}
+
+export function getTokenPriceViaPools(
+  tokenSymbol: string, 
+  poolInfos: PoolInfo[], 
+  prices: Record<string, number>
+): number {
+
+  const pool = poolInfos.find(pool => (pool.tokenA.symbol || pool.tokenB.symbol) === tokenSymbol);
+
+  if (!pool) {
+    return 0;
+  }
+
+  const { tokenA, tokenB } = pool;
+
+  const inputTokenCount = DecimalUtil.fromU64(
+    tokenA.amount,
+    tokenA.decimals
+  ).toNumber();
+
+  const outputTokenCount = DecimalUtil.fromU64(
+    tokenB.amount,
+    tokenB.decimals
+  ).toNumber();
+
+  const a2brate = outputTokenCount / inputTokenCount;
+  
+  let priceA = prices[tokenA.symbol] || 0,
+    priceB = prices[tokenB.symbol] || 0;
+
+  if (priceA && !priceB) {
+    priceB = priceA / a2brate;
+  } else if (priceB && !priceA) {
+    priceA = priceB * a2brate;
+  }
+
+  return tokenSymbol === tokenA.symbol ? priceA : priceB;
 
 }
 

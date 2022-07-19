@@ -221,7 +221,6 @@ export class Pool {
     }
   }
 
-
   public async getDepositQuote(
     maxTokenAIn: Decimal,
     maxTokenBIn: Decimal,
@@ -291,7 +290,7 @@ export class Pool {
         new PublicKey(tokenA.mint),
         maxTokenAIn_U64
       );
-
+    
     // If tokenB is SOL, this will create a new wSOL account with maxTokenBIn_U64
     // Otherwise, get tokenB's associated token account
     const { address: userTokenBPublicKey, ...resolveTokenBInstrucitons } =
@@ -316,6 +315,7 @@ export class Pool {
       maxTokenAIn_U64,
       userTokenAPublicKey
     );
+
     const { ...transferTokenBInstruction } = createApprovalInstruction(
       owner,
       maxTokenBIn_U64,

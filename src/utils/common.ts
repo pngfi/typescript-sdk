@@ -1,6 +1,5 @@
 import { PublicKey } from '@solana/web3.js';
 
-import { tokens } from '../config';
 import { PoolInfo, Token } from '../types';
 import Decimal from 'decimal.js';
 import { u64 } from '@solana/spl-token';
@@ -18,21 +17,21 @@ export function isNumber(value: any) {
 export function beautify(str = ''): string {
   const reg = str.indexOf('.') > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
   str = str.replace(reg, '$1,');
-  return str.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
+  return str.replace(/(\.[0-9]*[1-9]+)(0)*/, '$1');
 }
 
 export function toFixed(value = 0, fixed = 2, force = false): string {
   const str = /\./.test(value.toString()) ? new Decimal(value).toFixed(fixed, 1) :
     new Decimal(value).toFixed(force ? fixed : 0, 1);
     
-  return str.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
+  return str.replace(/(\.[0-9]*[1-9]+)(0)*/, '$1');
 }
 
-export function getTokenByMint(mint: string): Token | undefined {
+export function getTokenByMint(mint: string, tokens: Token[]): Token | undefined {
   return tokens.find(t => t.mint === mint);
 }
 
-export function getTokenBySymbol(symbol: string): Token | undefined {
+export function getTokenBySymbol(symbol: string, tokens: Token[]): Token | undefined {
   return tokens.find(t => t.symbol === symbol);
 }
 
@@ -41,10 +40,6 @@ export function toShortAddr(pubkey: string | PublicKey, length = 4): string {
     pubkey = pubkey.toString();
   }
   return `${pubkey.substr(0, length)}...${pubkey.substr(-length)}`;
-}
-
-export function getTokenByCoingeckoId(id: string): Token | undefined {
-  return tokens.find(t => t.extensions?.coingeckoId === id);
 }
 
 export const getPairByPoolInfo = (info: PoolInfo): string => {

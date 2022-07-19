@@ -1,0 +1,432 @@
+{
+  "version": "0.1.0",
+  "name": "bonding",
+  "instructions": [
+    {
+      "name": "initBonding",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "bondingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payoutHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payoutTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositHolder",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u8"
+        },
+        {
+          "name": "initDebt",
+          "type": "u64"
+        },
+        {
+          "name": "controlVariable",
+          "type": "u64"
+        },
+        {
+          "name": "decayFactor",
+          "type": "u64"
+        },
+        {
+          "name": "bondingSupply",
+          "type": "u64"
+        },
+        {
+          "name": "maxPayoutFactor",
+          "type": "u64"
+        },
+        {
+          "name": "maxDebt",
+          "type": "u64"
+        },
+        {
+          "name": "minPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "bond",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bondingPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payoutTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payoutHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userDepositHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userPayoutHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "maxPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "transferAdminAuth",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newAdminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateBonding",
+      "accounts": [
+        {
+          "name": "bonding",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "adminAuth",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bondingUpdate",
+          "type": {
+            "defined": "BondingUpdate"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Bonding",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "payoutTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "payoutHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "depositTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "depositHolder",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuth",
+            "type": "publicKey"
+          },
+          {
+            "name": "nonce",
+            "type": "u8"
+          },
+          {
+            "name": "depositAmount",
+            "type": "u64"
+          },
+          {
+            "name": "bondingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "maxPayoutFactor",
+            "type": "u64"
+          },
+          {
+            "name": "maxDebt",
+            "type": "u64"
+          },
+          {
+            "name": "minPrice",
+            "type": "u64"
+          },
+          {
+            "name": "totalDebt",
+            "type": "u64"
+          },
+          {
+            "name": "controlVariable",
+            "type": "u64"
+          },
+          {
+            "name": "decayFactor",
+            "type": "u64"
+          },
+          {
+            "name": "lastDecay",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "BondingUpdate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bondingSupply",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "controlVariable",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "decayFactor",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "maxPayoutFactor",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "maxDebt",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "minPrice",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "BondInitEvent",
+      "fields": [
+        {
+          "name": "nonce",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "initDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "controlVariable",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "decayFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "bondingSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxPayoutFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minPrice",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "BondEvent",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxPrice",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "payout",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "price",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "BondUpdateEvent",
+      "fields": [
+        {
+          "name": "bondingSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "controlVariable",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "decayFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxPayoutFactor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maxDebt",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minPrice",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    }
+  ]
+}

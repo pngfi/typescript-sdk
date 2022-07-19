@@ -1,6 +1,10 @@
 {
   "name": "@pngfi/sdk",
+<<<<<<< HEAD
   "version": "0.8.4",
+=======
+  "version": "0.9.3",
+>>>>>>> 2aa0921084dff889c9e855d7639be7b2b76dcdd8
   "description": "Typescript SDK for Penguin Finance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +14,7 @@
     "build": "tsc -p src",
     "watch": "tsc -w -p src",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
-    "prepare": "husky install",
+    "prepare": "yarn build",
     "prepublishOnly": "tsc -p src",
     "test": "jest"
   },
@@ -37,6 +41,7 @@
   "homepage": "https://png.fi",
   "dependencies": {
     "@orca-so/stablecurve": "^1.0.6",
+    "@project-serum/anchor": "^0.18.2",
     "@saberhq/solana-contrib": "^1.7.4",
     "@solana/buffer-layout": "^3.0.0",
     "@solana/spl-token": "^0.1.8",
