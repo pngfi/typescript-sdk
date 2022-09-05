@@ -130,7 +130,10 @@ export class Bonding {
 
   async bond(amount: u64): Promise<TransactionEnvelope> {
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const owner = this.program.provider.publicKey;
+    if(!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
     // const bondingInfo = await this.getBondingInfo();
 
     const [bondingPda] = await PublicKey.findProgramAddress(
