@@ -146,3 +146,17 @@ export class ConstantProductPoolQuoteBuilder {
     };
   }
 }
+
+
+export class ConstantPricePoolQuoteBuilder {
+  buildQuote(params: QuotePoolParams, inputTradeAmount: u64): Quote {
+    return {
+      getRate: () => getRate(inputTradeAmount, params),
+      getPriceImpact: () => getPriceImpact(inputTradeAmount, params),
+      getLPFees: () => getLPFees(inputTradeAmount, params),
+      getNetworkFees: () => new u64(getNetworkFees(params)),
+      getExpectedOutputAmount: () => getExpectedOutputAmount(inputTradeAmount, params),
+      getMinOutputAmount: () => getMinimumAmountOut(inputTradeAmount, params),
+    };
+  }
+}

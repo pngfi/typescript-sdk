@@ -55,7 +55,8 @@ export class Pool {
     outputToken: Token,
     inputTokenAmount: Decimal,
     outputTokenAmount: Decimal,
-    curveType?: CurveType
+    curveType?: CurveType,
+    curveParameters?: Numberu64
   ): Promise<{
     address: PublicKey,
     mint: PublicKey,
@@ -164,6 +165,7 @@ export class Pool {
       20,
       100,
       curveType || CurveType.ConstantProduct,
+      curveParameters
     );
 
     const balanceNeeded = await provider.connection.getMinimumBalanceForRentExemption(
