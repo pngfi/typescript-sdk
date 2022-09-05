@@ -20,7 +20,10 @@ export class Rewards {
 
     async getClaimStatusInfo() {
         const { distributor } = this.rewardsInfo;
-        const owner = this.program.provider.wallet?.publicKey;
+        const owner = this.program.provider.publicKey;
+        if (!owner) {
+          throw new Error("Provider wallet is not provided")
+        }
 
         let [claimStatus, _] = await PublicKey.findProgramAddress(
             [Buffer.from("ClaimStatus"), new PublicKey(distributor).toBuffer(), owner.toBuffer()],
@@ -39,7 +42,10 @@ export class Rewards {
     async claim(): Promise<TransactionEnvelope> {
         const { distributor, amount, index, proof, root } = this.rewardsInfo;
 
-        const owner = this.program.provider.wallet?.publicKey;
+        const owner = this.program.provider.publicKey;
+        if (!owner) {
+          throw new Error("Provider wallet is not provided")
+        }
 
         const distributorAcc = await this.program.account.merkleDistributor.fetch(new PublicKey(distributor));
 
@@ -48,12 +54,12 @@ export class Rewards {
             this.program.programId
         );
 
-        const distributorHolder = await deriveAssociatedTokenAddress(new PublicKey(distributor), distributorAcc.mint);
+        const distributorHolder = await deriveAssociatedTokenAddress(new PublicKey(distributor), (distributorAcc as any).mint);
         const { address: userHolder, ...resolveUserHolderInstrucitons } =
             await resolveOrCreateAssociatedTokenAddress(
                 this.program.provider.connection,
                 owner,
-                distributorAcc.mint
+                (distributorAcc as any).mint
             );
 
         const rewardsInstruction = this.program.instruction.claim(

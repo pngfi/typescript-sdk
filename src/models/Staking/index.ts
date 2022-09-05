@@ -52,7 +52,10 @@ export class Staking {
 
   async toVToken(amount: u64): Promise<TransactionEnvelope> {
 
-    const owner = this.vestingProgram.provider.wallet?.publicKey;
+    const owner = this.vestingProgram.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
     const vestConfigInfo = this.stakingInfo.vestConfigInfo;
 
     const [vcSigner, _] = await PublicKey.findProgramAddress(
@@ -99,9 +102,10 @@ export class Staking {
   }
 
   async vestAll(userVestingInfo: any, vestMint: PublicKey): Promise<TransactionEnvelope> {
-
-    const owner = this.program.provider.wallet?.publicKey;
-
+    const owner = this.program.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
     const instructions = [];
 
     const [userVestingAddress] = userVestingInfo ? [new PublicKey(userVestingInfo.pubkey)] : await PublicKey.findProgramAddress(
@@ -189,7 +193,10 @@ export class Staking {
       this.program.programId
     );
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const owner = this.program.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
 
     const stakedHolder = await deriveAssociatedTokenAddress(stakingPda, this.stakingInfo.tokenMint);
     const userTokenHolder = await deriveAssociatedTokenAddress(owner, this.stakingInfo.tokenMint);
@@ -232,7 +239,10 @@ export class Staking {
       this.program.programId
     );
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const owner = this.program.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
 
     const tokenHolder = await deriveAssociatedTokenAddress(stakingPda, this.stakingInfo.tokenMint);
     const userTokenHolder = await deriveAssociatedTokenAddress(owner, this.stakingInfo.tokenMint);
@@ -276,7 +286,10 @@ export class Staking {
       this.vestingProgram.programId
     );
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const owner = this.program.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
 
     const vestConfigInfo = this.stakingInfo.vestConfigInfo;
 
@@ -328,7 +341,10 @@ export class Staking {
       this.program.programId
     );
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const owner = this.program.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
 
     const [stakedHolder, userSTokenHolder] = await Promise.all([
       deriveAssociatedTokenAddress(stakingPda, this.stakingInfo.tokenMint),
@@ -369,7 +385,10 @@ export class Staking {
 
   async claimVestedToken(payoutTokenMint: PublicKey, vTokenMint: PublicKey, userVestingInfo: any): Promise<TransactionEnvelope> {
 
-    const owner = this.program.provider.wallet?.publicKey;
+    const owner = this.program.provider.publicKey;
+    if (!owner) {
+      throw new Error("Provider wallet is not provided")
+    }
     const userVestingAddress = userVestingInfo.pubkey;
 
     const [vcSigner] = await PublicKey.findProgramAddress(
