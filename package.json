@@ -1,6 +1,6 @@
 {
   "name": "@pngfi/sdk",
-  "version": "0.9.6",
+  "version": "0.9.8",
   "description": "Typescript SDK for Penguin Finance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,6 +14,7 @@
     "prepublishOnly": "tsc -p src",
     "c": "git add . && git-cz",
     "r": "nucm use pngfi-fu && standard-version && git push origin HEAD",
+    "publish": "npm publish --access public",
     "test": "jest"
   },
   "files": [

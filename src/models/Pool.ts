@@ -228,7 +228,7 @@ export class Pool {
     maxTokenAIn: Decimal,
     maxTokenBIn: Decimal,
     slippage = 1
-  ): Promise<DepositQuote> {
+  ): DepositQuote {
 
     const { tokenA, tokenB, lpSupply, poolTokenDecimals } = this.info;
 
