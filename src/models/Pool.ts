@@ -55,6 +55,8 @@ export class Pool {
     outputToken: Token,
     inputTokenAmount: Decimal,
     outputTokenAmount: Decimal,
+    curveType?: CurveType,
+    curveParameters?: Numberu64
   ): Promise<{
     address: PublicKey,
     mint: PublicKey,
@@ -162,7 +164,8 @@ export class Pool {
       PNG_TOKEN_SWAP_FEE_STRUCTURE.ownerWithdrawFeeDenominator,
       20,
       100,
-      CurveType.ConstantProduct,
+      curveType || CurveType.ConstantProduct,
+      curveParameters
     );
 
     const balanceNeeded = await provider.connection.getMinimumBalanceForRentExemption(
@@ -221,7 +224,7 @@ export class Pool {
     }
   }
 
-  public async getDepositQuote(
+  public getDepositQuote(
     maxTokenAIn: Decimal,
     maxTokenBIn: Decimal,
     slippage = 1
