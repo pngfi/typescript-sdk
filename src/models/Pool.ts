@@ -60,6 +60,7 @@ export class Pool {
   ): Promise<{
     address: PublicKey,
     mint: PublicKey,
+    baseTx: TransactionEnvelope
     tx: TransactionEnvelope
   }> {
 
@@ -180,7 +181,7 @@ export class Pool {
       programId: PNG_TOKEN_SWAP_ID,
     });
 
-    await new TransactionEnvelope(
+    const baseTx = await new TransactionEnvelope(
       provider,
       [
         ...createPoolMintInstructions.instructions,
@@ -194,7 +195,7 @@ export class Pool {
         ...resolveTokenBAccountInstrucitons.signers,
         ...resolveFeeAccountInstructions.signers,
       ]
-    ).confirm();
+    );
 
     const tx = new TransactionEnvelope(
       provider,
@@ -220,6 +221,7 @@ export class Pool {
     return {
       address: swapAccount.publicKey,
       mint: poolMintKP.publicKey,
+      baseTx,
       tx
     }
   }
