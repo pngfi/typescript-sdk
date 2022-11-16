@@ -340,6 +340,9 @@ export class Pool {
       userPoolTokenPublicKey,
       PNG_TOKEN_SWAP_ID,
       TOKEN_PROGRAM_ID,
+      // If there is a token using the token2022 program, then we need to declare the programId in the token config
+      tokenA.programId ? new PublicKey(tokenA.programId) : TOKEN_PROGRAM_ID,
+      tokenB.programId ? new PublicKey(tokenB.programId) : TOKEN_PROGRAM_ID,
       minPoolTokenAmountOut_U64,
       maxTokenAIn_U64,
       maxTokenBIn_U64
@@ -501,6 +504,8 @@ export class Pool {
       userTokenBPublicKey,
       PNG_TOKEN_SWAP_ID,
       TOKEN_PROGRAM_ID,
+      tokenA.programId ? new PublicKey(tokenA.programId) : TOKEN_PROGRAM_ID,
+      tokenB.programId ? new PublicKey(tokenB.programId) : TOKEN_PROGRAM_ID,
       new Numberu64(poolTokenAmount_U64.toString()),
       new Numberu64(tokenAAmount.toString()),
       new Numberu64(tokenBAmount.toString())

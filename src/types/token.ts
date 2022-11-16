@@ -10,4 +10,5 @@ export type Token = {
   fetchPrice?: boolean;
   isLP?: boolean;
   display?: boolean;
-}
+  programId?: string;
+};
