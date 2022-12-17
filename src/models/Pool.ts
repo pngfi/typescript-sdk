@@ -320,14 +320,14 @@ export class Pool {
       owner,
       maxTokenAIn_U64,
       userTokenAPublicKey,
-      tokenA.addr.equals(SOL_TOKEN_MINT)
+      tokenA.mint === SOL_TOKEN_MINT.toBase58()
     );
 
     const { ...transferTokenBInstruction } = createApprovalInstruction(
       owner,
       maxTokenBIn_U64,
       userTokenBPublicKey,
-      tokenA.addr.equals(SOL_TOKEN_MINT),
+      tokenB.mint === SOL_TOKEN_MINT.toBase58(),
       userTransferAuthority
     );
 
@@ -489,7 +489,7 @@ export class Pool {
       owner,
       poolTokenAmount_U64,
       userPoolTokenPublicKey,
-      tokenA.addr.equals(SOL_TOKEN_MINT)
+      false
     );
 
     const withdrawInstruction = TokenSwap.withdrawAllTokenTypesInstruction(
