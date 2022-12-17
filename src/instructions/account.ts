@@ -116,6 +116,7 @@ export const createApprovalInstruction = (
   ownerAddress: PublicKey,
   approveAmount: u64,
   tokenUserAddress: PublicKey,
+  isWSOL: boolean,
   userTransferAuthority?: Keypair
 ): { userTransferAuthority: Keypair } & Instruction => {
   userTransferAuthority = userTransferAuthority || new Keypair();
@@ -139,7 +140,7 @@ export const createApprovalInstruction = (
   return {
     userTransferAuthority: userTransferAuthority,
     instructions: [approvalInstruction],
-    cleanupInstructions: [revokeInstruction],
+    cleanupInstructions: isWSOL ? [] : [revokeInstruction],
     signers: [],
   };
 };
