@@ -29,7 +29,8 @@ import {
   ZERO_U64,
   TransactionBuilder,
   ONE_THOUSAND_U64,
-  ZERO_DECIMAL
+  ZERO_DECIMAL,
+  SOL_TOKEN_MINT
 } from '../utils';
 
 import {
@@ -318,13 +319,15 @@ export class Pool {
     const { userTransferAuthority, ...transferTokenAInstruction } = createApprovalInstruction(
       owner,
       maxTokenAIn_U64,
-      userTokenAPublicKey
+      userTokenAPublicKey,
+      tokenA.addr.equals(SOL_TOKEN_MINT)
     );
 
     const { ...transferTokenBInstruction } = createApprovalInstruction(
       owner,
       maxTokenBIn_U64,
       userTokenBPublicKey,
+      tokenA.addr.equals(SOL_TOKEN_MINT),
       userTransferAuthority
     );
 
@@ -485,7 +488,8 @@ export class Pool {
     const { userTransferAuthority, ...transferPoolTokenInstruction } = createApprovalInstruction(
       owner,
       poolTokenAmount_U64,
-      userPoolTokenPublicKey
+      userPoolTokenPublicKey,
+      tokenA.addr.equals(SOL_TOKEN_MINT)
     );
 
     const withdrawInstruction = TokenSwap.withdrawAllTokenTypesInstruction(
