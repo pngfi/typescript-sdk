@@ -1,10 +1,9 @@
-import { 
-  AccountLayout, 
-  Token as SPLToken, 
-  TOKEN_PROGRAM_ID, 
+import {
+  Token as SPLToken,
+  TOKEN_PROGRAM_ID,
   u64,
-  ASSOCIATED_TOKEN_PROGRAM_ID
-} from '@solana/spl-token';
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 
 import {
   Keypair,
@@ -12,47 +11,45 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from '@solana/web3.js';
+} from "@solana/web3.js";
 
-import { Instruction, ResolvedTokenAddressInstruction } from '../types';
-import { SYSTEM_PROGRAM_ID } from '../utils';
+import { Instruction, ResolvedTokenAddressInstruction } from "../types";
+import { deriveAssociatedTokenAddress, SYSTEM_PROGRAM_ID } from "../utils";
 
-export const createWSOLAccountInstructions = (
+export const createWSOLAccountInstructions = async (
   owner: PublicKey,
   solMint: PublicKey,
   amountIn: u64,
   rentExemptLamports: number
-): ResolvedTokenAddressInstruction => {
-  const tempAccount = new Keypair();
-
-  const createAccountInstruction = SystemProgram.createAccount({
-    fromPubkey: owner,
-    newAccountPubkey: tempAccount.publicKey,
-    lamports: amountIn.toNumber() + rentExemptLamports,
-    space: AccountLayout.span,
-    programId: TOKEN_PROGRAM_ID,
-  });
-
-  const initAccountInstruction = SPLToken.createInitAccountInstruction(
-    TOKEN_PROGRAM_ID,
-    solMint,
-    tempAccount.publicKey,
-    owner
-  );
+): Promise<ResolvedTokenAddressInstruction> => {
+  const wSOLATA = await deriveAssociatedTokenAddress(owner, solMint);
 
   const closeWSOLAccountInstruction = SPLToken.createCloseAccountInstruction(
     TOKEN_PROGRAM_ID,
-    tempAccount.publicKey,
+    wSOLATA,
     owner,
     owner,
     []
   );
-
   return {
-    address: tempAccount.publicKey,
-    instructions: [createAccountInstruction, initAccountInstruction],
+    address: wSOLATA,
+    instructions: [
+      SystemProgram.transfer({
+        fromPubkey: owner,
+        toPubkey: wSOLATA,
+        lamports: amountIn.toNumber() + rentExemptLamports,
+      }),
+      SPLToken.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        solMint,
+        wSOLATA,
+        owner,
+        owner
+      ),
+    ],
     cleanupInstructions: [closeWSOLAccountInstruction],
-    signers: [tempAccount],
+    signers: [],
   };
 };
 

@@ -1,26 +1,30 @@
-import { 
-  AccountLayout, 
-  TOKEN_PROGRAM_ID, 
-  u64, 
-  ASSOCIATED_TOKEN_PROGRAM_ID 
-} from '@solana/spl-token';
+import {
+  AccountLayout,
+  TOKEN_PROGRAM_ID,
+  u64,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  Token,
+} from "@solana/spl-token";
 
-import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  TransactionInstruction,
+} from "@solana/web3.js";
 
-import { 
-  emptyInstruction, 
-  ResolvedTokenAddressInstruction 
-} from '../types';
+import { emptyInstruction, ResolvedTokenAddressInstruction } from "../types";
 
-import { 
-  SOL_TOKEN_MINT, 
-  deserializeAccount 
-} from '../utils';
+import {
+  SOL_TOKEN_MINT,
+  deserializeAccount,
+  TokenAccountLayout,
+} from "../utils";
 
 import {
   createAssociatedTokenAccountInstruction,
   createWSOLAccountInstructions,
-} from '../instructions';
+} from "../instructions";
 
 /**
  * IMPORTANT: wrappedSolAmountIn should only be used for input/source token that
@@ -59,28 +63,63 @@ export async function resolveOrCreateAssociatedTokenAddress(
         owner
       );
     }
-    
+
     return {
       address: derivedAddress,
       instructions: resolveAtaInstruction.instructions,
       cleanupInstructions: resolveAtaInstruction.cleanupInstructions,
       signers: resolveAtaInstruction.signers,
     };
-  } else {
+  }
 
-    // TODO: Is there a way to store this cleaner?
-    const accountRentExempt = await connection.getMinimumBalanceForRentExemption(
-      AccountLayout.span
-    );
-
-    // Create a temp-account to transfer SOL in the form of WSOL
-    return createWSOLAccountInstructions(
+  const wSOLATA = await deriveAssociatedTokenAddress(owner, tokenMint);
+  const wSOLTokenAccountInfo = await connection.getAccountInfo(wSOLATA);
+  const accountRentExempt = await connection.getMinimumBalanceForRentExemption(
+    AccountLayout.span
+  );
+  // if wSOL account exists, check if it has enough balance to cover the amount
+  if (wSOLTokenAccountInfo) {
+    const tokenData = TokenAccountLayout.decode(wSOLTokenAccountInfo.data);
+    // if wSOL account has enough balance, return it
+    if (u64.fromBuffer(tokenData.amount).gte(wrappedSolAmountIn)) {
+      return {
+        address: wSOLATA,
+        instructions: [],
+        cleanupInstructions: [],
+        signers: [],
+      };
+    }
+    const wSOLAccountInstruction = await createWSOLAccountInstructions(
       owner,
-      SOL_TOKEN_MINT,
+      tokenMint,
       wrappedSolAmountIn,
       accountRentExempt
     );
+    const instructions: TransactionInstruction[] = [];
+    instructions.push(
+      Token.createCloseAccountInstruction(
+        TOKEN_PROGRAM_ID,
+        wSOLATA,
+        owner,
+        owner,
+        []
+      ),
+      ...wSOLAccountInstruction.instructions
+    );
+    return {
+      address: wSOLATA,
+      instructions,
+      cleanupInstructions: wSOLAccountInstruction.cleanupInstructions,
+      signers: wSOLAccountInstruction.signers,
+    };
   }
+  // if wSOL account does not exist, create one
+  return createWSOLAccountInstructions(
+    owner,
+    tokenMint,
+    wrappedSolAmountIn,
+    accountRentExempt
+  );
 }
 
 export async function createAssociatedTokenAddress(
@@ -112,7 +151,11 @@ export async function deriveAssociatedTokenAddress(
 ): Promise<PublicKey> {
   return (
     await PublicKey.findProgramAddress(
-      [walletAddress.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), tokenMint.toBuffer()],
+      [
+        walletAddress.toBuffer(),
+        TOKEN_PROGRAM_ID.toBuffer(),
+        tokenMint.toBuffer(),
+      ],
       ASSOCIATED_TOKEN_PROGRAM_ID
     )
   )[0];
